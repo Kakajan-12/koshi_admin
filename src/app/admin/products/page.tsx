@@ -87,15 +87,15 @@ const Products = () => {
                             <th className="py-2 px-4 border-b-2 border-gray-200 text-center text-gray-600">View</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y-1 divide-gray-200">
                         {products.length === 0 ? (
                             <tr>
                                 <td colSpan={5} className="text-center py-4">No data available</td>
                             </tr>
                         ) : (
                             products.map(product => (
-                                <tr key={product.id}>
-                                    <td className="py-4 px-4 border-b border-gray-200">
+                                <tr key={product.id} className="divide-x-1 divide-gray-200">
+                                    <td className="py-4 px-4">
                                         <Image
                                             src={`${process.env.NEXT_PUBLIC_API_URL}/${product.main_image}`.replace(/\\/g, '/')}
                                             alt={`Product ${product.id}`}
@@ -104,16 +104,16 @@ const Products = () => {
                                         />
 
                                     </td>
-                                    <td className="py-4 px-4 border-b border-gray-200">
+                                    <td className="py-4 px-4">
                                         <div dangerouslySetInnerHTML={{__html: product.product_name}}/>
                                     </td>
-                                    <td className="py-4 px-4 border-b border-gray-200">
-                                        <div dangerouslySetInnerHTML={{__html: product.product_name}}/>
+                                    <td className="py-4 px-4">
+                                        <div dangerouslySetInnerHTML={{__html: product.product_category}}/>
                                     </td>
-                                    <td className="py-4 px-4 border-b border-gray-200">
-                                        <div dangerouslySetInnerHTML={{__html: product.product_name}}/>
+                                    <td className="py-4 px-4">
+                                        <div dangerouslySetInnerHTML={{__html: product.loved}}/>
                                     </td>
-                                    <td className="py-4 px-4 border-b border-gray-200">
+                                    <td className="py-4 px-4">
                                         <Link href={`/admin/products/view-product/${product.id}`}
                                               className="bg text-white py-2 px-8 rounded-md cursor-pointer flex w-32"><EyeIcon
                                             color="#ffffff"/>

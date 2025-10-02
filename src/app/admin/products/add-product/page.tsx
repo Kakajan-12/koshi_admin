@@ -337,7 +337,7 @@ const AddProduct = () => {
                             type="submit"
                             className="w-full bg hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150"
                         >
-                            Add tour
+                            Add product
                         </button>
                     </form>
                 </div>
