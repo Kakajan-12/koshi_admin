@@ -202,7 +202,7 @@ const ViewProducts = () => {
                                 <div className="mt-4">
                                     <strong>Allergens:</strong>
                                     <ul className="list-disc list-inside">
-                                        {data.allergens.map((allergen: any) => (
+                                        {data.allergens.map((allergen: Allergen) => (
                                             <li key={allergen.id}>{allergen.name}</li>
                                         ))}
                                     </ul>
@@ -246,8 +246,8 @@ const ViewProducts = () => {
                 {showModal && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
                         <div className="bg-white p-6 rounded shadow-md w-96">
-                            <h2 className="text-lg font-bold mb-4">Remove testimonials</h2>
-                            <p className="mb-6">Are you sure you want to delete this testimonials?</p>
+                            <h2 className="text-lg font-bold mb-4">Remove product</h2>
+                            <p className="mb-6">Are you sure you want to delete this product?</p>
                             <div className="flex justify-end space-x-4">
                                 <button
                                     className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"

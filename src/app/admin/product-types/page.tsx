@@ -5,7 +5,7 @@ import axios, { AxiosError } from "axios";
 import Sidebar from "@/Components/Sidebar";
 import TokenTimer from "@/Components/TokenTimer";
 import Link from "next/link";
-import {EyeIcon, PencilIcon, PlusCircleIcon, TrashIcon} from "@heroicons/react/16/solid";
+import {PencilIcon, PlusCircleIcon, TrashIcon} from "@heroicons/react/16/solid";
 
 type DataItem = {
     id: string;
