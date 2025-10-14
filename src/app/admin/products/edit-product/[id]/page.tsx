@@ -18,23 +18,25 @@ const EditProduct = () => {
     const [loading, setLoading] = useState(true);
 
     const [mainImage, setMainImage] = useState<File | null>(null);
-    const [sliceImage, setSliceImage] = useState<File | null>(null);
-
     const [loved, setLoved] = useState(false);
     const [productName, setProductName] = useState('');
     const [productDesc, setProductDesc] = useState('');
-    const [price, setPrice] = useState('');
     const [productServes, setProductServes] = useState('');
-    const [productIngredientDesc, setProductIngredientDesc] = useState('');
     const [productIngredients, setProductIngredients] = useState('');
     const [productCategory, setProductCategory] = useState('');
     const [productTypes, setProductTypes] = useState('');
     const [productAvailability, setProductAvailability] = useState(false);
+    const [delivery, setDelivery] = useState('');
+    const [notice, setNotice] = useState('');
 
     const [categories, setCategories] = useState<Category[]>([]);
     const [types, setTypes] = useState<TypeItem[]>([]);
     const [allergens, setAllergens] = useState<Allergen[]>([]);
     const [selectedAllergens, setSelectedAllergens] = useState<number[]>([]);
+    type Variant = { id?: number; variant_name: string; price: string };
+
+    const [variants, setVariants] = useState<Variant[]>([]);
+
 
     useEffect(() => {
         setIsClient(true);
@@ -62,22 +64,30 @@ const EditProduct = () => {
                 setCategories(catData);
                 setAllergens(allergData);
 
-                // ---- Заполняем поля продуктом ----
                 setLoved(!!productData.loved);
                 setProductName(productData.product_name || '');
                 setProductDesc(productData.product_desc || '');
-                setPrice(productData.price || '');
                 setProductServes(productData.product_serves || '');
-                setProductIngredientDesc(productData.product_ingredient_desc || '');
                 setProductIngredients(productData.product_ingredients || '');
                 setProductCategory(String(productData.product_category || ''));
                 setProductTypes(String(productData.product_types || ''));
                 setProductAvailability(!!productData.product_availability);
+                setDelivery(productData.delivery || '');
+                setNotice(productData.notice || '');
 
-                // выбранные аллергены
                 if (productData.allergens) {
                     setSelectedAllergens(productData.allergens.map((a: Allergen) => a.id));
                 }
+                if (productData.variants) {
+                    setVariants(
+                        productData.variants.map((v: any) => ({
+                            id: v.id,
+                            variant_name: v.variant_name,
+                            price: String(v.price)
+                        }))
+                    );
+                }
+
 
             } catch (err) {
                 console.error('Ошибка загрузки:', err);
@@ -105,18 +115,18 @@ const EditProduct = () => {
 
         const formData = new FormData();
         if (mainImage) formData.append('main_image', mainImage);
-        if (sliceImage) formData.append('slice_image', sliceImage);
         formData.append('loved', loved ? '1' : '0');
         formData.append('product_name', productName);
         formData.append('product_desc', productDesc);
-        formData.append('price', price);
         formData.append('product_serves', productServes);
-        formData.append('product_ingredient_desc', productIngredientDesc);
         formData.append('product_ingredients', productIngredients);
         formData.append('product_category', productCategory);
         formData.append('product_types', productTypes);
         formData.append('product_availability', productAvailability ? '1' : '0');
         formData.append('allergens', JSON.stringify(selectedAllergens));
+        formData.append('delivery', delivery);
+        formData.append('notice', notice);
+        formData.append('variants', JSON.stringify(variants));
 
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/product/${id}`, {
@@ -156,15 +166,6 @@ const EditProduct = () => {
                                     type="file"
                                     accept="image/*"
                                     onChange={e => e.target.files && setMainImage(e.target.files[0])}
-                                    className="border rounded p-2 w-full"
-                                />
-                            </div>
-                            <div>
-                                <label className="block font-semibold mb-2">Slice Image:</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={e => e.target.files && setSliceImage(e.target.files[0])}
                                     className="border rounded p-2 w-full"
                                 />
                             </div>
@@ -216,25 +217,21 @@ const EditProduct = () => {
                                     ))}
                                 </select>
                             </div>
-                            <div>
-                                <label className="block font-semibold mb-2">Price:</label>
-                                <input
-                                    value={price}
-                                    onChange={e => setPrice(e.target.value)}
-                                    className="border rounded p-2 w-full"
-                                />
-                            </div>
                         </div>
 
                         {isClient && (
                             <>
                                 <div className="mb-4">
                                     <label className="block font-semibold mb-2">Product Name:</label>
-                                    <TipTapEditor content={productName} onChange={setProductName} />
+                                    <input
+                                        value={productName}
+                                        onChange={e => setProductName(e.target.value)}
+                                        className="border rounded p-2 w-full"
+                                    />
                                 </div>
                                 <div className="mb-4">
                                     <label className="block font-semibold mb-2">Product Description:</label>
-                                    <TipTapEditor content={productDesc} onChange={setProductDesc} />
+                                    <TipTapEditor content={productDesc} onChange={setProductDesc}/>
                                 </div>
                                 <div className="mb-4">
                                     <label className="block font-semibold mb-2">Serves:</label>
@@ -245,15 +242,21 @@ const EditProduct = () => {
                                     />
                                 </div>
                                 <div className="mb-4">
-                                    <label className="block font-semibold mb-2">Ingredient Description:</label>
-                                    <TipTapEditor content={productIngredientDesc} onChange={setProductIngredientDesc} />
+                                    <label className="block font-semibold mb-2">Ingredients:</label>
+                                    <TipTapEditor content={productIngredients} onChange={setProductIngredients}/>
                                 </div>
                                 <div className="mb-4">
-                                    <label className="block font-semibold mb-2">Ingredients:</label>
-                                    <TipTapEditor content={productIngredients} onChange={setProductIngredients} />
+                                    <label className="block font-semibold mb-2">Delivery:</label>
+                                    <TipTapEditor content={delivery} onChange={setDelivery}/>
                                 </div>
-
-                                {/* ----------- Allergen Checkboxes ----------- */}
+                                <div className="mb-4">
+                                    <label className="block font-semibold mb-2">Notice:</label>
+                                    <input
+                                        value={notice}
+                                        onChange={e => setNotice(e.target.value)}
+                                        className="border rounded p-2 w-full"
+                                    />
+                                </div>
                                 <div className="mb-6">
                                     <label className="block font-semibold mb-2">Allergens:</label>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -271,6 +274,50 @@ const EditProduct = () => {
                                 </div>
                             </>
                         )}
+                        <div className="mb-6">
+                            <label className="block font-semibold mb-2">Variants:</label>
+                            {variants.map((v, idx) => (
+                                <div key={idx} className="flex gap-2 mb-2 items-center">
+                                    <input
+                                        type="text"
+                                        value={v.variant_name}
+                                        onChange={e => {
+                                            const newVariants = [...variants];
+                                            newVariants[idx].variant_name = e.target.value;
+                                            setVariants(newVariants);
+                                        }}
+                                        placeholder="Variant Name"
+                                        className="border rounded p-2 w-1/2"
+                                    />
+                                    <input
+                                        type="number"
+                                        value={v.price}
+                                        onChange={e => {
+                                            const newVariants = [...variants];
+                                            newVariants[idx].price = e.target.value;
+                                            setVariants(newVariants);
+                                        }}
+                                        placeholder="Price"
+                                        className="border rounded p-2 w-1/4"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setVariants(variants.filter((_, i) => i !== idx))}
+                                        className="bg-red-500 text-white px-2 py-1 rounded"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            ))}
+                            <button
+                                type="button"
+                                onClick={() => setVariants([...variants, {variant_name: '', price: ''}])}
+                                className="bg-green-500 text-white px-4 py-2 rounded mt-2"
+                            >
+                                Add Variant
+                            </button>
+                        </div>
+
 
                         <button
                             type="submit"

@@ -9,17 +9,16 @@ import TipTapEditor from '@/Components/TipTapEditor';
 const AddProduct = () => {
     const [isClient, setIsClient] = useState(false);
     const [main_image, setMainImage] = useState<File | null>(null);
-    const [slice_image, setSliceImage] = useState<File | null>(null);
     const [loved, setLoved] = useState(false);
     const [product_name, setProductName] = useState('');
     const [product_desc, setProductDesc] = useState('');
-    const [price, setPrice] = useState('');
     const [product_serves, setProductServes] = useState('');
-    const [product_ingredient_desc, setProductIngredientDesc] = useState('');
     const [product_ingredients, setProductIngredients] = useState('');
     const [product_category, setProductCategory] = useState('');
     const [product_types, setProductTypes] = useState('');
     const [product_availability, setProductAvailability] = useState(false);
+    const [delivery, setDelivery] = useState('');
+    const [notice, setNotice] = useState('');
     const [cat, setCat] = useState<
         { id: number; name: string;}[]
     >([]);
@@ -29,6 +28,9 @@ const AddProduct = () => {
 
     const [allergens, setAllergens] = useState<{ id: number; name: string }[]>([]);
     const [selectedAllergens, setSelectedAllergens] = useState<number[]>([]);
+    const [variants, setVariants] = useState<{ variant_name: string; price: string }[]>([
+        { variant_name: '', price: '' },
+    ]);
 
 
     const router = useRouter();
@@ -76,20 +78,18 @@ const AddProduct = () => {
 
         const formData = new FormData();
         if (main_image) formData.append('main_image', main_image);
-        if (slice_image) formData.append('slice_image', slice_image);
         formData.append('loved', loved ? '1' : '0');
         formData.append('product_name', product_name ?? '');
         formData.append('product_desc', product_desc ?? '');
-        formData.append('price', price ?? '');
         formData.append('product_serves', product_serves ?? '');
-        formData.append('product_ingredient_desc', product_ingredient_desc ?? '');
         formData.append('product_ingredients', product_ingredients ?? '');
         formData.append('product_category', product_category ?? '');
         formData.append('product_types', product_types ?? '');
         formData.append('product_availability', product_availability ? '1' : '0');
         formData.append('allergens', JSON.stringify(selectedAllergens));
-
-
+        formData.append('delivery', delivery ?? '');
+        formData.append('notice', notice ?? '');
+        formData.append('variants', JSON.stringify(variants));
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/product`, {
                 method: 'POST',
@@ -103,17 +103,16 @@ const AddProduct = () => {
                 const data = await response.json();
                 console.log('добавлен!', data);
                 setMainImage(null);
-                setSliceImage(null);
                 setLoved(Boolean)
                 setProductName('');
                 setProductDesc('');
-                setPrice('')
                 setProductServes('');
-                setProductIngredientDesc('');
                 setProductIngredients('');
                 setProductCategory('');
                 setProductTypes('');
                 setProductAvailability(Boolean);
+                setDelivery('');
+                setNotice('');
                 router.push('/admin/products');
             } else {
                 const errorText = await response.text();
@@ -123,6 +122,20 @@ const AddProduct = () => {
             console.error('Ошибка запроса', error);
         }
     };
+    const handleVariantChange = (index: number, field: string, value: string) => {
+        const updated = [...variants];
+        updated[index][field] = value;
+        setVariants(updated);
+    };
+
+    const addVariant = () => {
+        setVariants([...variants, { variant_name: '', price: '' }]);
+    };
+
+    const removeVariant = (index: number) => {
+        setVariants(variants.filter((_, i) => i !== index));
+    };
+
 
     return (
         <div className="flex bg-gray-200">
@@ -148,23 +161,6 @@ const AddProduct = () => {
                                     onChange={(e) => {
                                         if (e.target.files && e.target.files[0]) {
                                             setMainImage(e.target.files[0]);
-                                        }
-                                    }}
-                                    required
-                                    className="border border-gray-300 rounded p-2 w-full focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-150"
-                                />
-                            </div>
-                            <div className="w-full">
-                                <label htmlFor="slice_image" className="block text-gray-700 font-semibold mb-2">
-                                    Slice Image:
-                                </label>
-                                <input
-                                    type="file"
-                                    id="slice_image"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                        if (e.target.files && e.target.files[0]) {
-                                            setSliceImage(e.target.files[0]);
                                         }
                                     }}
                                     required
@@ -228,17 +224,6 @@ const AddProduct = () => {
                                 </select>
                             </div>
                             <div className="mb-4 w-full">
-                                <label
-                                    className="block text-gray-700 font-semibold mb-2">Price:</label>
-                                <input
-                                    value={price}
-                                    onChange={(e) => setPrice(e.target.value)}
-                                    type="text"
-                                    required
-                                    className="border border-gray-300 rounded p-2 w-full"
-                                />
-                            </div>
-                            <div className="mb-4 w-full">
                                 <label className="block text-gray-700 font-semibold mb-2">
                                     Available:
                                 </label>
@@ -264,7 +249,7 @@ const AddProduct = () => {
                                     <div className="tab-content bg-base-100 border-base-300 p-6">
                                         <div className="mb-4">
                                             <label className="block text-gray-700 font-semibold mb-2">Product
-                                            Name:</label>
+                                                Name:</label>
                                             <input
                                                 content={product_name}
                                                 onChange={(e) => setProductName(e.target.value)}
@@ -283,7 +268,7 @@ const AddProduct = () => {
                                             />
                                         </div>
                                         <div className="mb-4 w-full">
-                                        <label
+                                            <label
                                                 className="block text-gray-700 font-semibold mb-2">Product
                                                 Sereves:</label>
                                             <input
@@ -296,18 +281,29 @@ const AddProduct = () => {
                                         </div>
                                         <div className="mb-4">
                                             <label
-                                                className="block text-gray-700 font-semibold mb-2">Product Ingredient Description</label>
+                                                className="block text-gray-700 font-semibold mb-2">Product
+                                                Ingredients</label>
                                             <TipTapEditor
-                                                content={product_ingredient_desc}
-                                                onChange={(content) => setProductIngredientDesc(content)}
+                                                content={product_ingredients}
+                                                onChange={(content) => setProductIngredients(content)}
                                             />
                                         </div>
                                         <div className="mb-4">
                                             <label
-                                                className="block text-gray-700 font-semibold mb-2">Product Ingredients</label>
+                                                className="block text-gray-700 font-semibold mb-2">Delivery</label>
                                             <TipTapEditor
-                                                content={product_ingredients}
-                                                onChange={(content) => setProductIngredients(content)}
+                                                content={delivery}
+                                                onChange={(content) => setDelivery(content)}
+                                            />
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 font-semibold mb-2">Notice:</label>
+                                            <input
+                                                content={notice}
+                                                onChange={(e) => setNotice(e.target.value)}
+                                                type="text"
+                                                required
+                                                className="border border-gray-300 rounded p-2 w-full"
                                             />
                                         </div>
                                     </div>
@@ -332,6 +328,47 @@ const AddProduct = () => {
                                 </div>
                             </>
                         )}
+                        <div className="mb-6">
+                            <h3 className="text-lg font-semibold mb-2">Product Variants</h3>
+                            {variants.map((variant, index) => (
+                                <div key={index} className="grid grid-cols-2 gap-4 mb-2 items-center">
+                                    <input
+                                        type="text"
+                                        placeholder="Variant name (e.g. Small)"
+                                        value={variant.variant_name}
+                                        onChange={(e) => handleVariantChange(index, 'variant_name', e.target.value)}
+                                        className="border border-gray-300 rounded p-2"
+                                        required
+                                    />
+                                    <input
+                                        type="number"
+                                        placeholder="Price"
+                                        step="0.01"
+                                        value={variant.price}
+                                        onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
+                                        className="border border-gray-300 rounded p-2"
+                                        required
+                                    />
+                                    {variants.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => removeVariant(index)}
+                                            className="text-red-500 font-semibold"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+
+                            <button
+                                type="button"
+                                onClick={addVariant}
+                                className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                            >
+                                + Add Variant
+                            </button>
+                        </div>
 
                         <button
                             type="submit"

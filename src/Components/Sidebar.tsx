@@ -8,6 +8,7 @@ import { MdOutlineMergeType  } from "react-icons/md";
 import { TbCategoryFilled } from "react-icons/tb";
 import { RiLinksLine } from "react-icons/ri";
 import { VscFeedback } from "react-icons/vsc";
+import { GrGallery } from "react-icons/gr";
 
 const menuGroups = [
     {
@@ -15,6 +16,7 @@ const menuGroups = [
         key: "products",
         links: [
             { href: "/admin/products", label: "Products", icon: LuCake},
+            { href: "/admin/products-gallery", label: "Product Gallery", icon: GrGallery },
             { href: "/admin/product-category", label: "Category", icon: TbCategoryFilled},
             { href: "/admin/product-types", label: "Types", icon: MdOutlineMergeType },
         ],

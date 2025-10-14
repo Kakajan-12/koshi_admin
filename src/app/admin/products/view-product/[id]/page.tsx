@@ -11,27 +11,32 @@ import {
     PencilIcon,
     TrashIcon,
 } from '@heroicons/react/16/solid';
+import {FaPoundSign} from "react-icons/fa";
 
 type Allergen = {
     id: number;
     name: string;
 };
 
+type Variant = { id: number; variant_name: string; price: number };
+
 type Data = {
     id: number;
     main_image?: string;
-    slice_image?: string;
     loved?: string;
     product_name?: string;
     product_desc?: string;
-    price?: string;
     product_serves?: string;
-    product_ingredient_desc?: string;
     product_ingredients?: string;
     product_category?: string;
     product_types?: string;
     product_availability?: string;
-    allergens?: Allergen[];   // ✅ добавляем массив
+    category_name?: string;
+    type_name?: string;
+    delivery?: string;
+    notice?: string;
+    allergens?: Allergen[];
+    variants?: Variant[];
 };
 
 
@@ -169,32 +174,13 @@ const ViewProducts = () => {
                                 )}
                             </div>
                             <div>
-                                <div className="font-bold text-xl">Slice Image</div>
-                                {data.slice_image && (
-                                    <Image
-                                        src={`${process.env.NEXT_PUBLIC_API_URL}/${data.slice_image.replace('\\', '/')}`}
-                                        alt="image"
-                                        width={600}
-                                        height={400}
-                                        className="rounded-md border border-black"
-                                    />
-                                )}
-                            </div>
-                            <div className="">
                                 <div>
-                                    <strong>Popular:</strong>
+                                    <strong>Loved:</strong>
                                     <p>{data.loved ? `Yes` : `No`}</p>
                                 </div>
                                 <div>
                                     <strong>Available:</strong>
                                     <p>{data.product_availability ? `Yes` : `No`}</p>
-                                </div>
-                                <div>
-                                    {data.price && (
-                                        <div><strong>Product Price:</strong>
-                                            <div>{data.price}</div>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
 
@@ -218,6 +204,19 @@ const ViewProducts = () => {
                                     <div dangerouslySetInnerHTML={{__html: data.product_name}}/>
                                 </div>
                             )}
+                            {Array.isArray(data.variants) && data.variants.length > 0 && (
+                                <div className="mt-4">
+                                    <strong>Variants:</strong>
+                                    <ul className="list-disc list-inside">
+                                        {data.variants.map(v => (
+                                            <li key={v.id} className="flex space-x-2">
+                                                <div>{v.variant_name}</div> — <div className="flex items-center"><FaPoundSign size={14} style={{marginBottom: "2px"}}/> {v.price.toFixed(2)}</div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
                             {data.product_desc && (
                                 <div><strong>Product Description:</strong>
                                     <div dangerouslySetInnerHTML={{__html: data.product_desc}}/>
@@ -228,14 +227,29 @@ const ViewProducts = () => {
                                     <div dangerouslySetInnerHTML={{__html: data.product_serves}}/>
                                 </div>
                             )}
-                            {data.product_ingredient_desc && (
-                                <div><strong>Product Ingredient Description:</strong>
-                                    <div dangerouslySetInnerHTML={{__html: data.product_ingredient_desc}}/>
-                                </div>
-                            )}
                             {data.product_ingredients && (
                                 <div><strong>Product Ingredients:</strong>
                                     <div dangerouslySetInnerHTML={{__html: data.product_ingredients}}/>
+                                </div>
+                            )}
+                            {data.category_name && (
+                                <div><strong>Product Category:</strong>
+                                    <div dangerouslySetInnerHTML={{__html: data.category_name}}/>
+                                </div>
+                            )}
+                            {data.type_name && (
+                                <div><strong>Product Type:</strong>
+                                    <div dangerouslySetInnerHTML={{__html: data.type_name}}/>
+                                </div>
+                            )}
+                            {data.delivery && (
+                                <div><strong>Delivery:</strong>
+                                    <div dangerouslySetInnerHTML={{__html: data.delivery}}/>
+                                </div>
+                            )}
+                            {data.notice && (
+                                <div><strong>Notice:</strong>
+                                    <div dangerouslySetInnerHTML={{__html: data.notice}}/>
                                 </div>
                             )}
                         </div>

@@ -11,17 +11,9 @@ import Image from "next/image";
 interface ProductsItem {
     id: number;
     main_image: string;
-    slice_image: string;
     loved: boolean;
     product_name: string;
-    product_desc: string;
-    price: number;
-    product_serves: string;
-    product_ingredient_desc: string;
-    product_ingredients: string;
-    product_category: number;
-    product_types: number;
-    product_availability: string;
+    category_name: string;
 }
 
 const Products = () => {
@@ -108,11 +100,17 @@ const Products = () => {
                                         <div dangerouslySetInnerHTML={{__html: product.product_name}}/>
                                     </td>
                                     <td className="py-4 px-4">
-                                        <div dangerouslySetInnerHTML={{__html: product.product_category}}/>
+                                        <div dangerouslySetInnerHTML={{__html: product.category_name}}/>
                                     </td>
                                     <td className="py-4 px-4">
-                                        <div dangerouslySetInnerHTML={{__html: product.loved}}/>
+                                        {product.loved ? (
+                                            <p className="bg-green-600 text-white px-2 py-1 rounded w-fit">Loved</p>
+                                        ) : (
+                                            <p className="bg-red-600 text-white px-2 py-1 rounded w-fit">Not Loved</p>
+                                        )}
                                     </td>
+
+
                                     <td className="py-4 px-4">
                                         <Link href={`/admin/products/view-product/${product.id}`}
                                               className="bg text-white py-2 px-8 rounded-md cursor-pointer flex w-32"><EyeIcon
