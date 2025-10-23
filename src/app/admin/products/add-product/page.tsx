@@ -6,6 +6,11 @@ import Sidebar from '@/Components/Sidebar';
 import TokenTimer from '@/Components/TokenTimer';
 import TipTapEditor from '@/Components/TipTapEditor';
 
+interface Variant {
+    variant_name: string;
+    price: string;
+}
+
 const AddProduct = () => {
     const [isClient, setIsClient] = useState(false);
     const [main_image, setMainImage] = useState<File | null>(null);
@@ -28,7 +33,7 @@ const AddProduct = () => {
 
     const [allergens, setAllergens] = useState<{ id: number; name: string }[]>([]);
     const [selectedAllergens, setSelectedAllergens] = useState<number[]>([]);
-    const [variants, setVariants] = useState<{ variant_name: string; price: string }[]>([
+    const [variants, setVariants] = useState<Variant[]>([
         { variant_name: '', price: '' },
     ]);
 
@@ -122,7 +127,11 @@ const AddProduct = () => {
             console.error('Ошибка запроса', error);
         }
     };
-    const handleVariantChange = (index: number, field: string, value: string) => {
+    const handleVariantChange = (
+        index: number,
+        field: keyof Variant, // ✅ строго ограничиваем допустимые поля
+        value: string
+    ) => {
         const updated = [...variants];
         updated[index][field] = value;
         setVariants(updated);

@@ -10,6 +10,13 @@ type Category = { id: number; name: string };
 type TypeItem = { id: number; type_name: string };
 type Allergen = { id: number; name: string };
 
+type ApiVariant = {
+    id?: number;
+    variant_name?: string;
+    price?: string | number;
+};
+
+
 const EditProduct = () => {
     const { id } = useParams();
     const router = useRouter();
@@ -80,10 +87,10 @@ const EditProduct = () => {
                 }
                 if (productData.variants) {
                     setVariants(
-                        productData.variants.map((v: any) => ({
+                        (productData.variants as ApiVariant[]).map(v => ({
                             id: v.id,
-                            variant_name: v.variant_name,
-                            price: String(v.price)
+                            variant_name: v.variant_name || '',
+                            price: String(v.price || '')
                         }))
                     );
                 }
