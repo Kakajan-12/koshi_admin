@@ -113,97 +113,103 @@ const SocialLinks = () => {
     if (error) return <div className="text-red-500">{error}</div>;
 
     return (
-        <div className="flex bg-gray-200 min-h-screen">
-            <Sidebar />
-            <div className="flex-1 p-10 ml-62">
-                <TokenTimer />
-                <div className="mt-8">
-                    <div className="w-full flex justify-between">
-                        <h2 className="text-2xl font-bold mb-4">Social Links</h2>
-                        <Link href="/admin/social-links/add-link" className="bg text-white py-2 px-8 rounded-md cursor-pointer flex items-center">
-                            <PlusCircleIcon className="w-6 h-6" color="#ffffff" />
-                            <div className="ml-2">Add</div>
-                        </Link>
-                    </div>
-                    <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                        <thead>
-                        <tr className="divide-x-1 divide-gray-200">
-                            <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Icon</th>
-                            <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Url</th>
-                            <th className="py-2 px-4 border-b-2 border-gray-200 text-center text-gray-600">Edit</th>
-                            <th className="py-2 px-4 border-b-2 border-gray-200 text-center text-gray-600">Delete</th>
-                        </tr>
-                        </thead>
-                        <tbody className="divide-y-1 divide-gray-200">
-                        {links.length === 0 ? (
-                            <tr>
-                                <td colSpan={4} className="text-center py-4">No data available</td>
+        <div className="container mx-auto">
+            <div className="flex bg-gray-200 min-h-screen">
+                <Sidebar/>
+                <div className="flex-1 p-10 ml-62">
+                    <TokenTimer/>
+                    <div className="mt-8">
+                        <div className="w-full flex justify-between">
+                            <h2 className="text-2xl font-bold mb-4">Social Links</h2>
+                            <Link href="/admin/social-links/add-link"
+                                  className="bg text-white py-2 px-8 rounded-md cursor-pointer flex items-center">
+                                <PlusCircleIcon className="w-6 h-6" color="#ffffff"/>
+                                <div className="ml-2">Add</div>
+                            </Link>
+                        </div>
+                        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                            <thead>
+                            <tr className="divide-x-1 divide-gray-200">
+                                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Icon</th>
+                                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Url</th>
+                                <th className="py-2 px-4 border-b-2 border-gray-200 text-center text-gray-600">Edit</th>
+                                <th className="py-2 px-4 border-b-2 border-gray-200 text-center text-gray-600">Delete</th>
                             </tr>
-                        ) : (
-                            links.map((link) => (
-                                <tr key={link.id} className="divide-x-1 divide-gray-200">
-                                    <td className="py-4 px-4 border-b border-gray-200">
-                                        {getIconComponent(link.icon)}
-                                    </td>
-                                    <td className="py-4 px-4 border-b border-gray-200 w-full">
-                                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-                                            {link.url}
-                                        </a>
-                                    </td>
-                                    <td className="py-4 px-4 border-b border-gray-200">
-                                        <Link href={`/admin/social-links/edit-link/${link.id}`}
-                                              className="bg text-white py-2 px-8 rounded-md cursor-pointer flex w-32 justify-center items-center">
-                                            <PencilIcon className="w-5 h-5" color="#ffffff" />
-                                            <div className="ml-2">Edit</div>
-                                        </Link>
-                                    </td>
-                                    <td className="py-4 px-4 border-b border-gray-200">
-                                        <button
-                                            onClick={() => {
-                                                setDeleteId(link.id);
-                                                setShowModal(true);
-                                            }}
-                                            className="bg-red-700 text-white py-2 px-8 rounded-md cursor-pointer flex w-32 justify-center items-center"
-                                        >
-                                            <TrashIcon className="w-5 h-5" color="#ffffff" />
-                                            <div className="ml-2">Delete</div>
-                                        </button>
-                                    </td>
+                            </thead>
+                            <tbody className="divide-y-1 divide-gray-200">
+                            {links.length === 0 ? (
+                                <tr>
+                                    <td colSpan={4} className="text-center py-4">No data available</td>
                                 </tr>
-                            ))
-                        )}
-                        </tbody>
-                    </table>
+                            ) : (
+                                links.map((link) => (
+                                    <tr key={link.id} className="divide-x-1 divide-gray-200">
+                                        <td className="py-4 px-4 border-b border-gray-200">
+                                            {getIconComponent(link.icon)}
+                                        </td>
+                                        <td className="py-4 px-4 border-b border-gray-200 w-full">
+                                            <a href={link.url} target="_blank" rel="noopener noreferrer"
+                                               className="text-blue-600 underline">
+                                                {link.url}
+                                            </a>
+                                        </td>
+                                        <td className="py-4 px-4 border-b border-gray-200">
+                                            <Link href={`/admin/social-links/edit-link/${link.id}`}
+                                                  className="bg text-white py-2 px-8 rounded-md cursor-pointer flex w-32 justify-center items-center">
+                                                <PencilIcon className="w-5 h-5" color="#ffffff"/>
+                                                <div className="ml-2">Edit</div>
+                                            </Link>
+                                        </td>
+                                        <td className="py-4 px-4 border-b border-gray-200">
+                                            <button
+                                                onClick={() => {
+                                                    setDeleteId(link.id);
+                                                    setShowModal(true);
+                                                }}
+                                                className="bg-red-700 text-white py-2 px-8 rounded-md cursor-pointer flex w-32 justify-center items-center"
+                                            >
+                                                <TrashIcon className="w-5 h-5" color="#ffffff"/>
+                                                <div className="ml-2">Delete</div>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
 
-            {/* Modal */}
-            {showModal && (
-                <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white p-6 rounded-lg">
-                        <p className="text-lg font-medium mb-4">Remove link?</p>
-                        <div className="flex justify-end space-x-4">
-                            <button
-                                onClick={() => {
-                                    setDeleteId(null);
-                                    setShowModal(false);
-                                }}
-                                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                                disabled={isDeleting}
-                            >
-                                {isDeleting ? 'Deleting...' : 'Delete'}
-                            </button>
+                {/* Modal */}
+                {showModal && (
+                    <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center z-50">
+                        <div className="bg-white p-6 rounded-lg">
+                            <p className="text-lg font-medium mb-4">Remove link?</p>
+                            <div className="flex justify-end space-x-4">
+                                <button
+                                    onClick={() => {
+                                        setDeleteId(null);
+                                        setShowModal(false);
+                                    }}
+                                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDelete}
+                                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                                    disabled={isDeleting}
+                                >
+                                    {isDeleting ? 'Deleting...' : 'Delete'}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
+
+
     );
 };
 

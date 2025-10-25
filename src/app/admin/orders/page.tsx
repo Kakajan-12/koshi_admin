@@ -96,46 +96,47 @@ const Orders = () => {
     }
 
     return (
-        <div className="flex bg-gray-200">
-            <Sidebar />
-            <div className="flex-1 p-10 ml-62">
-                <TokenTimer />
-                <div className="mt-8">
-                    <h2 className="text-2xl font-bold mb-6">Customer Orders</h2>
+        <div className="container mx-auto">
+            <div className="flex bg-gray-200">
+                <Sidebar/>
+                <div className="flex-1 p-10 ml-62">
+                    <TokenTimer/>
+                    <div className="mt-8">
+                        <h2 className="text-2xl font-bold mb-6">Customer Orders</h2>
 
-                    {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                            {error}
-                        </div>
-                    )}
+                        {error && (
+                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                                {error}
+                            </div>
+                        )}
 
-                    <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                        <thead>
-                        <tr>
-                            <th className="py-2 px-4 border-b-2 text-left text-gray-600">ID</th>
-                            <th className="py-2 px-4 border-b-2 text-left text-gray-600">Customer</th>
-                            <th className="py-2 px-4 border-b-2 text-left text-gray-600">Email</th>
-                            <th className="py-2 px-4 border-b-2 text-left text-gray-600">Total</th>
-                            <th className="py-2 px-4 border-b-2 text-left text-gray-600">Payment</th>
-                            <th className="py-2 px-4 border-b-2 text-left text-gray-600">Date</th>
-                            <th className="py-2 px-4 border-b-2 text-center text-gray-600">View</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {orders.length === 0 ? (
+                        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                            <thead>
                             <tr>
-                                <td colSpan={7} className="text-center py-4">
-                                    No orders found
-                                </td>
+                                <th className="py-2 px-4 border-b-2 text-left text-gray-600">ID</th>
+                                <th className="py-2 px-4 border-b-2 text-left text-gray-600">Customer</th>
+                                <th className="py-2 px-4 border-b-2 text-left text-gray-600">Email</th>
+                                <th className="py-2 px-4 border-b-2 text-left text-gray-600">Total</th>
+                                <th className="py-2 px-4 border-b-2 text-left text-gray-600">Payment</th>
+                                <th className="py-2 px-4 border-b-2 text-left text-gray-600">Date</th>
+                                <th className="py-2 px-4 border-b-2 text-center text-gray-600">View</th>
                             </tr>
-                        ) : (
-                            orders.map((order) => (
-                                <tr key={order.id} className="border-b">
-                                    <td className="py-3 px-4">#{order.id}</td>
-                                    <td className="py-3 px-4">{order.name || "Guest"}</td>
-                                    <td className="py-3 px-4">{order.email || "N/A"}</td>
-                                    <td className="py-3 px-4">£{Number(order.total).toFixed(2)}</td>
-                                    <td className="py-3 px-4">
+                            </thead>
+                            <tbody>
+                            {orders.length === 0 ? (
+                                <tr>
+                                    <td colSpan={7} className="text-center py-4">
+                                        No orders found
+                                    </td>
+                                </tr>
+                            ) : (
+                                orders.map((order) => (
+                                    <tr key={order.id} className="border-b">
+                                        <td className="py-3 px-4">#{order.id}</td>
+                                        <td className="py-3 px-4">{order.name || "Guest"}</td>
+                                        <td className="py-3 px-4">{order.email || "N/A"}</td>
+                                        <td className="py-3 px-4">£{Number(order.total).toFixed(2)}</td>
+                                        <td className="py-3 px-4">
                                             <span
                                                 className={`px-2 py-1 rounded text-white text-sm ${
                                                     order.status?.toLowerCase() === "paid" ||
@@ -148,25 +149,28 @@ const Orders = () => {
                                             >
                                                 {order.status || "Unknown"}
                                             </span>
-                                    </td>
-                                    <td className="py-3 px-4">{formatDate(order.createdAt)}</td>
-                                    <td className="py-3 px-4 text-center">
-                                        <Link
-                                            href={`/admin/orders/view-orders/${order.id}`}
-                                            className="bg-green-700 text-white py-2 px-4 rounded-md inline-flex items-center hover:bg-green-800"
-                                        >
-                                            <EyeIcon className="h-5 w-5 mr-1" />
-                                            View
-                                        </Link>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                        </tbody>
-                    </table>
+                                        </td>
+                                        <td className="py-3 px-4">{formatDate(order.createdAt)}</td>
+                                        <td className="py-3 px-4 text-center">
+                                            <Link
+                                                href={`/admin/orders/view-orders/${order.id}`}
+                                                className="bg-green-700 text-white py-2 px-4 rounded-md inline-flex items-center hover:bg-green-800"
+                                            >
+                                                <EyeIcon className="h-5 w-5 mr-1"/>
+                                                View
+                                            </Link>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
+
+
     );
 };
 

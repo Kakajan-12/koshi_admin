@@ -9,8 +9,6 @@ const AdminPanel = () => {
             <Sidebar/>
             <div className="flex-1 p-10 ml-62">
                 <TokenTimer/>
-
-
             </div>
         </div>
     );

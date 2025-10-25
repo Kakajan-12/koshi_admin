@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useRouter} from 'next/navigation';
 import Sidebar from '@/Components/Sidebar';
 import TokenTimer from '@/Components/TokenTimer';
@@ -60,75 +60,80 @@ const AddTestimonials = () => {
 
 
     return (
-        <div className="flex bg-gray-200">
-            <Sidebar/>
-            <div className="flex-1 p-10 ml-62">
-                <TokenTimer/>
-                <div className="mt-8">
-                    <form
-                        onSubmit={handleSubmit}
-                        className="w-full mx-auto p-6 border border-gray-300 rounded-lg shadow-lg bg-white"
-                    >
-                        <h2 className="text-2xl font-bold mb-4 text-left">Add new testimonials</h2>
+        <div className="container mx-auto">
+            <div className="flex bg-gray-200">
+                <Sidebar/>
+                <div className="flex-1 p-10 ml-62">
+                    <TokenTimer/>
+                    <div className="mt-8">
+                        <form
+                            onSubmit={handleSubmit}
+                            className="w-full mx-auto p-6 border border-gray-300 rounded-lg shadow-lg bg-white"
+                        >
+                            <h2 className="text-2xl font-bold mb-4 text-left">Add new testimonials</h2>
 
-                        <div className="mb-4 flex space-x-4">
-                            <div className="w-full">
-                                <label htmlFor="image" className="block text-gray-700 font-semibold mb-2">
-                                    Image:
-                                </label>
-                                <input
-                                    type="file"
-                                    id="image"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                        if (e.target.files && e.target.files[0]) {
-                                            setImage(e.target.files[0]);
-                                        }
-                                    }}
-                                    required
-                                    className="border border-gray-300 rounded p-2 w-full focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-150"
-                                />
+                            <div className="mb-4 flex space-x-4">
+                                <div className="w-full">
+                                    <label htmlFor="image" className="block text-gray-700 font-semibold mb-2">
+                                        Image:
+                                    </label>
+                                    <input
+                                        type="file"
+                                        id="image"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            if (e.target.files && e.target.files[0]) {
+                                                setImage(e.target.files[0]);
+                                            }
+                                        }}
+                                        required
+                                        className="border border-gray-300 rounded p-2 w-full focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-150"
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        {isClient && (
-                            <>
-                                <div className="tabs tabs-lift">
-                                    <input type="radio" name="my_tabs_3" className="tab" aria-label="Testimonials"
-                                           defaultChecked/>
-                                    <div className="tab-content bg-base-100 border-base-300 p-6">
-                                        <div className="mb-4">
-                                            <label className="block text-gray-700 font-semibold mb-2">Name:</label>
-                                            <input
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                type="text"
-                                                required
-                                                className="border border-gray-300 rounded p-2 w-full"
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="block text-gray-700 font-semibold mb-2">Comment:</label>
-                                            <TipTapEditor
-                                                content={comment}
-                                                onChange={(content) => setComment(content)}
-                                            />
+                            {isClient && (
+                                <>
+                                    <div className="tabs tabs-lift">
+                                        <input type="radio" name="my_tabs_3" className="tab" aria-label="Testimonials"
+                                               defaultChecked/>
+                                        <div className="tab-content bg-base-100 border-base-300 p-6">
+                                            <div className="mb-4">
+                                                <label className="block text-gray-700 font-semibold mb-2">Name:</label>
+                                                <input
+                                                    value={name}
+                                                    onChange={(e) => setName(e.target.value)}
+                                                    type="text"
+                                                    required
+                                                    className="border border-gray-300 rounded p-2 w-full"
+                                                />
+                                            </div>
+                                            <div className="mb-4">
+                                                <label
+                                                    className="block text-gray-700 font-semibold mb-2">Comment:</label>
+                                                <TipTapEditor
+                                                    content={comment}
+                                                    onChange={(content) => setComment(content)}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </>
-                        )}
+                                </>
+                            )}
 
-                        <button
-                            type="submit"
-                            className="w-full bg hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150"
-                        >
-                            Add testimonials
-                        </button>
-                    </form>
+                            <button
+                                type="submit"
+                                className="w-full bg hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150"
+                            >
+                                Add testimonials
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
+
+
     );
 };
 

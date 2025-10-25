@@ -101,188 +101,195 @@ const ViewProducts = () => {
     if (!data) return <div className="p-4">Загрузка...</div>;
 
     return (
-        <div className="flex bg-gray-200 min-h-screen">
-            <Sidebar/>
-            <div className="flex-1 p-10 ml-62">
-                <TokenTimer/>
-                <div className="mt-8">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-bold">View Product</h2>
-                        <Menu as="div" className="relative inline-block text-left">
-                            <Menu.Button
-                                className="inline-flex items-center gap-2 rounded-md bg-gray-800 py-1.5 px-3 text-sm font-semibold text-white hover:bg-gray-700">
-                                Options
-                                <ChevronDownIcon className="w-4 h-4 fill-white/60"/>
-                            </Menu.Button>
-                            <Transition
-                                as={Fragment}
-                                enter="transition ease-out duration-100"
-                                enterFrom="transform opacity-0 scale-95"
-                                enterTo="transform opacity-100 scale-100"
-                                leave="transition ease-in duration-75"
-                                leaveFrom="transform opacity-100 scale-100"
-                                leaveTo="transform opacity-0 scale-95"
-                            >
-                                <Menu.Items
-                                    className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-50">
-                                    <div className="py-1">
-                                        <Menu.Item>
-                                            {({active}) => (
-                                                <button
-                                                    onClick={() => router.push(`/admin/products/edit-product/${id}`)}
-                                                    className={`${
-                                                        active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                                                    } group flex items-center w-full px-4 py-2 text-sm`}
-                                                >
-                                                    <PencilIcon className="w-4 h-4 mr-2 text-gray-400"/>
-                                                    Edit
-                                                </button>
-                                            )}
-                                        </Menu.Item>
-                                        <div className="border-t border-gray-100"/>
-                                        <Menu.Item>
-                                            {({active}) => (
-                                                <button
-                                                    onClick={() => setShowModal(true)}
-                                                    className={`${
-                                                        active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                                                    } group flex items-center w-full px-4 py-2 text-sm`}
-                                                >
-                                                    <TrashIcon className="w-4 h-4 mr-2 text-gray-400"/>
-                                                    Delete
-                                                </button>
-                                            )}
-                                        </Menu.Item>
-                                    </div>
-                                </Menu.Items>
-                            </Transition>
-                        </Menu>
-                    </div>
+        <div className="container mx-auto">
+            <div className="flex bg-gray-200 min-h-screen">
+                <Sidebar/>
+                <div className="flex-1 p-10 ml-62">
+                    <TokenTimer/>
+                    <div className="mt-8">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-2xl font-bold">View Product</h2>
+                            <Menu as="div" className="relative inline-block text-left">
+                                <Menu.Button
+                                    className="inline-flex items-center gap-2 rounded-md bg-gray-800 py-1.5 px-3 text-sm font-semibold text-white hover:bg-gray-700">
+                                    Options
+                                    <ChevronDownIcon className="w-4 h-4 fill-white/60"/>
+                                </Menu.Button>
+                                <Transition
+                                    as={Fragment}
+                                    enter="transition ease-out duration-100"
+                                    enterFrom="transform opacity-0 scale-95"
+                                    enterTo="transform opacity-100 scale-100"
+                                    leave="transition ease-in duration-75"
+                                    leaveFrom="transform opacity-100 scale-100"
+                                    leaveTo="transform opacity-0 scale-95"
+                                >
+                                    <Menu.Items
+                                        className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                                        <div className="py-1">
+                                            <Menu.Item>
+                                                {({active}) => (
+                                                    <button
+                                                        onClick={() => router.push(`/admin/products/edit-product/${id}`)}
+                                                        className={`${
+                                                            active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                                        } group flex items-center w-full px-4 py-2 text-sm`}
+                                                    >
+                                                        <PencilIcon className="w-4 h-4 mr-2 text-gray-400"/>
+                                                        Edit
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                            <div className="border-t border-gray-100"/>
+                                            <Menu.Item>
+                                                {({active}) => (
+                                                    <button
+                                                        onClick={() => setShowModal(true)}
+                                                        className={`${
+                                                            active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                                        } group flex items-center w-full px-4 py-2 text-sm`}
+                                                    >
+                                                        <TrashIcon className="w-4 h-4 mr-2 text-gray-400"/>
+                                                        Delete
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                        </div>
+                                    </Menu.Items>
+                                </Transition>
+                            </Menu>
+                        </div>
 
-                    <div className="bg-white p-6 rounded-md shadow space-x-6 flex">
-                        <div className="flex flex-col">
-                            <div>
-                                <div className="font-bold text-xl">Main Image</div>
-                                {data.main_image && (
-                                    <Image
-                                        src={`${process.env.NEXT_PUBLIC_API_URL}/${data.main_image.replace('\\', '/')}`}
-                                        alt="image"
-                                        width={600}
-                                        height={400}
-                                        className="rounded-md border border-black"
-                                    />
+                        <div className="bg-white p-6 rounded-md shadow space-x-6 flex">
+                            <div className="flex flex-col">
+                                <div>
+                                    <div className="font-bold text-xl">Main Image</div>
+                                    {data.main_image && (
+                                        <Image
+                                            src={`${process.env.NEXT_PUBLIC_API_URL}/${data.main_image.replace('\\', '/')}`}
+                                            alt="image"
+                                            width={600}
+                                            height={400}
+                                            className="rounded-md border border-black"
+                                        />
+                                    )}
+                                </div>
+                                <div>
+                                    <div>
+                                        <strong>Loved:</strong>
+                                        <p>{data.loved ? `Yes` : `No`}</p>
+                                    </div>
+                                    <div>
+                                        <strong>Available:</strong>
+                                        <p>{data.product_availability ? `Yes` : `No`}</p>
+                                    </div>
+                                </div>
+
+                                {Array.isArray(data.allergens) && data.allergens.length > 0 && (
+                                    <div className="mt-4">
+                                        <strong>Allergens:</strong>
+                                        <ul className="list-disc list-inside">
+                                            {data.allergens.map((allergen: Allergen) => (
+                                                <li key={allergen.id}>{allergen.name}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+
+                            </div>
+
+                            <div className="flex-1 space-y-10">
+                                {data.product_name && (
+                                    <div><strong>Product Name:</strong>
+                                        <div dangerouslySetInnerHTML={{__html: data.product_name}}/>
+                                    </div>
+                                )}
+                                {Array.isArray(data.variants) && data.variants.length > 0 && (
+                                    <div className="mt-4">
+                                        <strong>Variants:</strong>
+                                        <ul className="list-disc list-inside">
+                                            {data.variants.map(v => (
+                                                <li key={v.id} className="flex space-x-2">
+                                                    <div>{v.variant_name}</div>
+                                                    — <div className="flex items-center"><FaPoundSign size={14}
+                                                                                                      style={{marginBottom: "2px"}}/> {v.price.toFixed(2)}
+                                                </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {data.product_desc && (
+                                    <div><strong>Product Description:</strong>
+                                        <div dangerouslySetInnerHTML={{__html: data.product_desc}}/>
+                                    </div>
+                                )}
+                                {data.product_serves && (
+                                    <div><strong>Product Serves:</strong>
+                                        <div dangerouslySetInnerHTML={{__html: data.product_serves}}/>
+                                    </div>
+                                )}
+                                {data.product_ingredients && (
+                                    <div><strong>Product Ingredients:</strong>
+                                        <div dangerouslySetInnerHTML={{__html: data.product_ingredients}}/>
+                                    </div>
+                                )}
+                                {data.category_name && (
+                                    <div><strong>Product Category:</strong>
+                                        <div dangerouslySetInnerHTML={{__html: data.category_name}}/>
+                                    </div>
+                                )}
+                                {data.type_name && (
+                                    <div><strong>Product Type:</strong>
+                                        <div dangerouslySetInnerHTML={{__html: data.type_name}}/>
+                                    </div>
+                                )}
+                                {data.delivery && (
+                                    <div><strong>Delivery:</strong>
+                                        <div dangerouslySetInnerHTML={{__html: data.delivery}}/>
+                                    </div>
+                                )}
+                                {data.notice && (
+                                    <div><strong>Notice:</strong>
+                                        <div dangerouslySetInnerHTML={{__html: data.notice}}/>
+                                    </div>
                                 )}
                             </div>
-                            <div>
-                                <div>
-                                    <strong>Loved:</strong>
-                                    <p>{data.loved ? `Yes` : `No`}</p>
-                                </div>
-                                <div>
-                                    <strong>Available:</strong>
-                                    <p>{data.product_availability ? `Yes` : `No`}</p>
+
+                        </div>
+                    </div>
+
+                    {showModal && (
+                        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+                            <div className="bg-white p-6 rounded shadow-md w-96">
+                                <h2 className="text-lg font-bold mb-4">Remove product</h2>
+                                <p className="mb-6">Are you sure you want to delete this product?</p>
+                                <div className="flex justify-end space-x-4">
+                                    <button
+                                        className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+                                        onClick={() => setShowModal(false)}
+                                        disabled={isDeleting}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
+                                        onClick={handleDelete}
+                                        disabled={isDeleting}
+                                    >
+                                        {isDeleting ? 'Deleting...' : 'Delete'}
+                                    </button>
                                 </div>
                             </div>
-
-                            {Array.isArray(data.allergens) && data.allergens.length > 0 && (
-                                <div className="mt-4">
-                                    <strong>Allergens:</strong>
-                                    <ul className="list-disc list-inside">
-                                        {data.allergens.map((allergen: Allergen) => (
-                                            <li key={allergen.id}>{allergen.name}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-
-
                         </div>
-
-                        <div className="flex-1 space-y-10">
-                            {data.product_name && (
-                                <div><strong>Product Name:</strong>
-                                    <div dangerouslySetInnerHTML={{__html: data.product_name}}/>
-                                </div>
-                            )}
-                            {Array.isArray(data.variants) && data.variants.length > 0 && (
-                                <div className="mt-4">
-                                    <strong>Variants:</strong>
-                                    <ul className="list-disc list-inside">
-                                        {data.variants.map(v => (
-                                            <li key={v.id} className="flex space-x-2">
-                                                <div>{v.variant_name}</div> — <div className="flex items-center"><FaPoundSign size={14} style={{marginBottom: "2px"}}/> {v.price.toFixed(2)}</div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-
-                            {data.product_desc && (
-                                <div><strong>Product Description:</strong>
-                                    <div dangerouslySetInnerHTML={{__html: data.product_desc}}/>
-                                </div>
-                            )}
-                            {data.product_serves && (
-                                <div><strong>Product Serves:</strong>
-                                    <div dangerouslySetInnerHTML={{__html: data.product_serves}}/>
-                                </div>
-                            )}
-                            {data.product_ingredients && (
-                                <div><strong>Product Ingredients:</strong>
-                                    <div dangerouslySetInnerHTML={{__html: data.product_ingredients}}/>
-                                </div>
-                            )}
-                            {data.category_name && (
-                                <div><strong>Product Category:</strong>
-                                    <div dangerouslySetInnerHTML={{__html: data.category_name}}/>
-                                </div>
-                            )}
-                            {data.type_name && (
-                                <div><strong>Product Type:</strong>
-                                    <div dangerouslySetInnerHTML={{__html: data.type_name}}/>
-                                </div>
-                            )}
-                            {data.delivery && (
-                                <div><strong>Delivery:</strong>
-                                    <div dangerouslySetInnerHTML={{__html: data.delivery}}/>
-                                </div>
-                            )}
-                            {data.notice && (
-                                <div><strong>Notice:</strong>
-                                    <div dangerouslySetInnerHTML={{__html: data.notice}}/>
-                                </div>
-                            )}
-                        </div>
-
-                    </div>
+                    )}
                 </div>
-
-                {showModal && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-                        <div className="bg-white p-6 rounded shadow-md w-96">
-                            <h2 className="text-lg font-bold mb-4">Remove product</h2>
-                            <p className="mb-6">Are you sure you want to delete this product?</p>
-                            <div className="flex justify-end space-x-4">
-                                <button
-                                    className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
-                                    onClick={() => setShowModal(false)}
-                                    disabled={isDeleting}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
-                                    onClick={handleDelete}
-                                    disabled={isDeleting}
-                                >
-                                    {isDeleting ? 'Deleting...' : 'Delete'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
+
+
     );
 };
 

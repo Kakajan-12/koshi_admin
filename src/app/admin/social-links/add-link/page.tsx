@@ -1,6 +1,6 @@
 'use client';
 
-import { useState} from 'react';
+import React, { useState} from 'react';
 import { TextField, Button, MenuItem } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/Components/Sidebar';
@@ -33,43 +33,47 @@ const AddLink = () => {
     };
 
     return (
-        <div className="flex bg-gray-200">
-            <Sidebar />
-            <div className="flex-1 p-10 ml-62">
-                <TokenTimer />
-                <div className="mt-8 bg-white p-4">
-                    <form onSubmit={(e) => e.preventDefault()} style={{display: 'flex', gap: '1rem'}}>
-                        <TextField
-                            select
-                            label="Platform"
-                            value={icon}
-                            onChange={(e) => setIcon(e.target.value)}
-                            required
-                            className="w-56"
-                        >
-                            {icons.map((p) => (
-                                <MenuItem key={p} value={p}>
-                                    {p}
-                                </MenuItem>
-                            ))}
-                        </TextField>
+        <div className="container mx-auto">
+            <div className="flex bg-gray-200">
+                <Sidebar/>
+                <div className="flex-1 p-10 ml-62">
+                    <TokenTimer/>
+                    <div className="mt-8 bg-white p-4">
+                        <form onSubmit={(e) => e.preventDefault()} style={{display: 'flex', gap: '1rem'}}>
+                            <TextField
+                                select
+                                label="Platform"
+                                value={icon}
+                                onChange={(e) => setIcon(e.target.value)}
+                                required
+                                className="w-56"
+                            >
+                                {icons.map((p) => (
+                                    <MenuItem key={p} value={p}>
+                                        {p}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
 
-                        <TextField
-                            label="Links"
-                            value={url}
-                            onChange={(e) => setUrl(e.target.value)}
-                            required
-                            fullWidth
-                        />
+                            <TextField
+                                label="Links"
+                                value={url}
+                                onChange={(e) => setUrl(e.target.value)}
+                                required
+                                fullWidth
+                            />
 
-                        <Button variant="contained" onClick={handleSubmit}
-                        className="w-44 !bg text-white">
-                            Add link
-                        </Button>
-                    </form>
+                            <Button variant="contained" onClick={handleSubmit}
+                                    className="w-44 !bg text-white">
+                                Add link
+                            </Button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
+
+
     );
 };
 

@@ -93,7 +93,9 @@ const AddProduct = () => {
         formData.append('product_availability', product_availability ? '1' : '0');
         formData.append('allergens', JSON.stringify(selectedAllergens));
         formData.append('delivery', delivery ?? '');
-        formData.append('notice', notice ?? '');
+        if (notice.trim() !== '') {
+            formData.append('notice', notice);
+        }
         formData.append('variants', JSON.stringify(variants));
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/product`, {
@@ -147,248 +149,254 @@ const AddProduct = () => {
 
 
     return (
-        <div className="flex bg-gray-200">
-            <Sidebar/>
-            <div className="flex-1 p-10 ml-62">
-                <TokenTimer/>
-                <div className="mt-8">
-                    <form
-                        onSubmit={handleSubmit}
-                        className="w-full mx-auto p-6 border border-gray-300 rounded-lg shadow-lg bg-white"
-                    >
-                        <h2 className="text-2xl font-bold mb-4 text-left">Add Product</h2>
+        <div className="container mx-auto">
+            <div className="flex bg-gray-200">
+                <Sidebar/>
+                <div className="flex-1 p-10 ml-62">
+                    <TokenTimer/>
+                    <div className="mt-8">
+                        <form
+                            onSubmit={handleSubmit}
+                            className="w-full mx-auto p-6 border border-gray-300 rounded-lg shadow-lg bg-white"
+                        >
+                            <h2 className="text-2xl font-bold mb-4 text-left">Add Product</h2>
 
-                        <div className="mb-4 grid grid-cols-3 gap-4">
-                            <div className="w-full">
-                                <label htmlFor="main_image" className="block text-gray-700 font-semibold mb-2">
-                                    Main Image:
-                                </label>
-                                <input
-                                    type="file"
-                                    id="main_image"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                        if (e.target.files && e.target.files[0]) {
-                                            setMainImage(e.target.files[0]);
-                                        }
-                                    }}
-                                    required
-                                    className="border border-gray-300 rounded p-2 w-full focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-150"
-                                />
-                            </div>
-                            <div className="mb-4 w-full">
-                                <label className="block text-gray-700 font-semibold mb-2">
-                                    Loved:
-                                </label>
-                                <select
-                                    id="loved"
-                                    name="loved"
-                                    value={loved ? '1' : '0'}
-                                    onChange={(e) => setLoved(e.target.value === '1')}
-                                    required
-                                    className="border border-gray-300 rounded p-2 w-full"
-                                >
-                                    <option value="1">Yes</option>
-                                    <option value="0">No</option>
-                                </select>
-                            </div>
-                            <div className="w-full">
-                                <label className="block text-gray-700 font-semibold mb-2">
-                                    Select Types:
-                                </label>
-                                <select
-                                    id="product_types"
-                                    name="product_types"
-                                    value={product_types}
-                                    onChange={(e) => setProductTypes(e.target.value)}
-                                    required
-                                    className="border border-gray-300 rounded p-2 w-full"
-                                >
-                                    <option value="">Select type</option>
-                                    {types.map((type) => (
-                                        <option key={type.id} value={type.id}>
-                                            {type.type_name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="w-full">
-                                <label className="block text-gray-700 font-semibold mb-2">
-                                    Select Category:
-                                </label>
-                                <select
-                                    id="product_category"
-                                    name="product_category"
-                                    value={product_category}
-                                    onChange={(e) => setProductCategory(e.target.value)}
-                                    required
-                                    className="border border-gray-300 rounded p-2 w-full"
-                                >
-                                    <option value="">Select category</option>
-                                    {cat.map((cat) => (
-                                        <option key={cat.id} value={cat.id}>
-                                            {cat.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="mb-4 w-full">
-                                <label className="block text-gray-700 font-semibold mb-2">
-                                    Available:
-                                </label>
-                                <select
-                                    id="product_availability"
-                                    name="product_availability"
-                                    value={product_availability ? '1' : '0'}
-                                    onChange={(e) => setProductAvailability(e.target.value === '1')}
-                                    required
-                                    className="border border-gray-300 rounded p-2 w-full"
-                                >
-                                    <option value="1">Yes</option>
-                                    <option value="0">No</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        {isClient && (
-                            <>
-                                <div className="tabs tabs-lift">
-                                    <input type="radio" name="my_tabs_1" className="tab" aria-label="Content"
-                                           defaultChecked/>
-                                    <div className="tab-content bg-base-100 border-base-300 p-6">
-                                        <div className="mb-4">
-                                            <label className="block text-gray-700 font-semibold mb-2">Product
-                                                Name:</label>
-                                            <input
-                                                content={product_name}
-                                                onChange={(e) => setProductName(e.target.value)}
-                                                type="text"
-                                                required
-                                                className="border border-gray-300 rounded p-2 w-full"
-                                            />
-
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="block text-gray-700 font-semibold mb-2">Product
-                                                Description:</label>
-                                            <TipTapEditor
-                                                content={product_desc}
-                                                onChange={(content) => setProductDesc(content)}
-                                            />
-                                        </div>
-                                        <div className="mb-4 w-full">
-                                            <label
-                                                className="block text-gray-700 font-semibold mb-2">Product
-                                                Sereves:</label>
-                                            <input
-                                                content={product_serves}
-                                                onChange={(e) => setProductServes(e.target.value)}
-                                                type="text"
-                                                required
-                                                className="border border-gray-300 rounded p-2 w-full"
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label
-                                                className="block text-gray-700 font-semibold mb-2">Product
-                                                Ingredients</label>
-                                            <TipTapEditor
-                                                content={product_ingredients}
-                                                onChange={(content) => setProductIngredients(content)}
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label
-                                                className="block text-gray-700 font-semibold mb-2">Delivery</label>
-                                            <TipTapEditor
-                                                content={delivery}
-                                                onChange={(content) => setDelivery(content)}
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="block text-gray-700 font-semibold mb-2">Notice:</label>
-                                            <input
-                                                content={notice}
-                                                onChange={(e) => setNotice(e.target.value)}
-                                                type="text"
-                                                required
-                                                className="border border-gray-300 rounded p-2 w-full"
-                                            />
-                                        </div>
-                                    </div>
-                                    <input type="radio" name="my_tabs_1" className="tab" aria-label="Allergens"/>
-                                    <div className="tab-content bg-base-100 border-base-300 p-6">
-                                        <h3 className="text-lg font-semibold mb-4">Select Allergens</h3>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {allergens.map((allergen) => (
-                                                <label key={allergen.id} className="flex items-center space-x-2">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedAllergens.includes(allergen.id)}
-                                                        onChange={() => toggleAllergen(allergen.id)}
-                                                        className="checkbox checkbox-primary"
-                                                    />
-                                                    <span>{allergen.name}</span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </>
-                        )}
-                        <div className="mb-6">
-                            <h3 className="text-lg font-semibold mb-2">Product Variants</h3>
-                            {variants.map((variant, index) => (
-                                <div key={index} className="grid grid-cols-2 gap-4 mb-2 items-center">
+                            <div className="mb-4 grid grid-cols-3 gap-4">
+                                <div className="w-full">
+                                    <label htmlFor="main_image" className="block text-gray-700 font-semibold mb-2">
+                                        Main Image:
+                                    </label>
                                     <input
-                                        type="text"
-                                        placeholder="Variant name (e.g. Small)"
-                                        value={variant.variant_name}
-                                        onChange={(e) => handleVariantChange(index, 'variant_name', e.target.value)}
-                                        className="border border-gray-300 rounded p-2"
+                                        type="file"
+                                        id="main_image"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            if (e.target.files && e.target.files[0]) {
+                                                setMainImage(e.target.files[0]);
+                                            }
+                                        }}
                                         required
+                                        className="border border-gray-300 rounded p-2 w-full focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-150"
                                     />
-                                    <input
-                                        type="number"
-                                        placeholder="Price"
-                                        step="0.01"
-                                        value={variant.price}
-                                        onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
-                                        className="border border-gray-300 rounded p-2"
-                                        required
-                                    />
-                                    {variants.length > 1 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => removeVariant(index)}
-                                            className="text-red-500 font-semibold"
-                                        >
-                                            ✕
-                                        </button>
-                                    )}
                                 </div>
-                            ))}
+                                <div className="mb-4 w-full">
+                                    <label className="block text-gray-700 font-semibold mb-2">
+                                        Loved:
+                                    </label>
+                                    <select
+                                        id="loved"
+                                        name="loved"
+                                        value={loved ? '1' : '0'}
+                                        onChange={(e) => setLoved(e.target.value === '1')}
+                                        required
+                                        className="border border-gray-300 rounded p-2 w-full"
+                                    >
+                                        <option value="1">Yes</option>
+                                        <option value="0">No</option>
+                                    </select>
+                                </div>
+                                <div className="w-full">
+                                    <label className="block text-gray-700 font-semibold mb-2">
+                                        Select Types:
+                                    </label>
+                                    <select
+                                        id="product_types"
+                                        name="product_types"
+                                        value={product_types}
+                                        onChange={(e) => setProductTypes(e.target.value)}
+                                        required
+                                        className="border border-gray-300 rounded p-2 w-full"
+                                    >
+                                        <option value="">Select type</option>
+                                        {types.map((type) => (
+                                            <option key={type.id} value={type.id}>
+                                                {type.type_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="w-full">
+                                    <label className="block text-gray-700 font-semibold mb-2">
+                                        Select Category:
+                                    </label>
+                                    <select
+                                        id="product_category"
+                                        name="product_category"
+                                        value={product_category}
+                                        onChange={(e) => setProductCategory(e.target.value)}
+                                        required
+                                        className="border border-gray-300 rounded p-2 w-full"
+                                    >
+                                        <option value="">Select category</option>
+                                        {cat.map((cat) => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {cat.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="mb-4 w-full">
+                                    <label className="block text-gray-700 font-semibold mb-2">
+                                        Available:
+                                    </label>
+                                    <select
+                                        id="product_availability"
+                                        name="product_availability"
+                                        value={product_availability ? '1' : '0'}
+                                        onChange={(e) => setProductAvailability(e.target.value === '1')}
+                                        required
+                                        className="border border-gray-300 rounded p-2 w-full"
+                                    >
+                                        <option value="1">Yes</option>
+                                        <option value="0">No</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {isClient && (
+                                <>
+                                    <div className="tabs tabs-lift">
+                                        <input type="radio" name="my_tabs_1" className="tab" aria-label="Content"
+                                               defaultChecked/>
+                                        <div className="tab-content bg-base-100 border-base-300 p-6">
+                                            <div className="mb-4">
+                                                <label className="block text-gray-700 font-semibold mb-2">Product
+                                                    Name:</label>
+                                                <input
+                                                    content={product_name}
+                                                    onChange={(e) => setProductName(e.target.value)}
+                                                    type="text"
+                                                    required
+                                                    className="border border-gray-300 rounded p-2 w-full"
+                                                />
+
+                                            </div>
+                                            <div className="mb-4">
+                                                <label className="block text-gray-700 font-semibold mb-2">Product
+                                                    Description:</label>
+                                                <TipTapEditor
+                                                    content={product_desc}
+                                                    onChange={(content) => setProductDesc(content)}
+                                                />
+                                            </div>
+                                            <div className="mb-4 w-full">
+                                                <label
+                                                    className="block text-gray-700 font-semibold mb-2">Product
+                                                    Serves:</label>
+                                                <input
+                                                    content={product_serves}
+                                                    onChange={(e) => setProductServes(e.target.value)}
+                                                    type="text"
+                                                    required
+                                                    className="border border-gray-300 rounded p-2 w-full"
+                                                />
+                                            </div>
+                                            <div className="mb-4">
+                                                <label
+                                                    className="block text-gray-700 font-semibold mb-2">Product
+                                                    Ingredients</label>
+                                                <TipTapEditor
+                                                    content={product_ingredients}
+                                                    onChange={(content) => setProductIngredients(content)}
+                                                />
+                                            </div>
+                                            <div className="mb-4">
+                                                <label
+                                                    className="block text-gray-700 font-semibold mb-2">Delivery</label>
+                                                <TipTapEditor
+                                                    content={delivery}
+                                                    onChange={(content) => setDelivery(content)}
+                                                />
+                                            </div>
+                                            <div className="mb-4">
+                                                <label
+                                                    className="block text-gray-700 font-semibold mb-2">Notice:
+                                                    (optional)</label>
+                                                <input
+                                                    content={notice}
+                                                    onChange={(e) => setNotice(e.target.value)}
+                                                    type="text"
+                                                    className="border border-gray-300 rounded p-2 w-full"
+                                                />
+                                            </div>
+                                            <div className="mb-6">
+                                                <h3 className="text-lg font-semibold mb-2">Product Variants</h3>
+                                                {variants.map((variant, index) => (
+                                                    <div key={index}
+                                                         className="grid grid-cols-2 gap-4 mb-2 items-center">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Variant name (e.g. Small)"
+                                                            value={variant.variant_name}
+                                                            onChange={(e) => handleVariantChange(index, 'variant_name', e.target.value)}
+                                                            className="border border-gray-300 rounded p-2"
+                                                            required
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            placeholder="Price"
+                                                            step="0.01"
+                                                            value={variant.price}
+                                                            onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
+                                                            className="border border-gray-300 rounded p-2"
+                                                            required
+                                                        />
+                                                        {variants.length > 1 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeVariant(index)}
+                                                                className="text-red-500 font-semibold"
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+
+                                                <button
+                                                    type="button"
+                                                    onClick={addVariant}
+                                                    className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                                                >
+                                                    + Add Variant
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <input type="radio" name="my_tabs_1" className="tab" aria-label="Allergens"/>
+                                        <div className="tab-content bg-base-100 border-base-300 p-6">
+                                            <h3 className="text-lg font-semibold mb-4">Select Allergens</h3>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {allergens.map((allergen) => (
+                                                    <label key={allergen.id} className="flex items-center space-x-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedAllergens.includes(allergen.id)}
+                                                            onChange={() => toggleAllergen(allergen.id)}
+                                                            className="checkbox checkbox-primary"
+                                                        />
+                                                        <span>{allergen.name}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </>
+                            )}
 
                             <button
-                                type="button"
-                                onClick={addVariant}
-                                className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                                type="submit"
+                                className="w-full bg hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150"
                             >
-                                + Add Variant
+                                Add product
                             </button>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full bg hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150"
-                        >
-                            Add product
-                        </button>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
+
+
     );
 };
 

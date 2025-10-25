@@ -99,89 +99,93 @@ const EditGallery = () => {
     if (error) return <p>{error}</p>;
 
     return (
-        <div className="flex bg-gray-200 min-h-screen">
-            <Sidebar />
-            <div className="flex-1 p-10 ml-62">
-                <TokenTimer />
-                <div className="mt-8">
-                    <h1 className="text-2xl font-bold mb-4">Edit Product Gallery</h1>
-                    <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded shadow">
-                        {data.image && (
-                            <div className="mb-4">
-                                <label className="block font-semibold mb-2">Current image:</label>
-                                <Image
-                                    src={`${process.env.NEXT_PUBLIC_API_URL}/${data.image.replace(/\\/g, '/')}`}
-                                    alt="Gallery Image"
-                                    width={200}
-                                    height={200}
-                                    className="w-64 rounded"
-                                />
-                            </div>
-                        )}
-                        <div className="mb-4 flex space-x-4">
-                            <div className="w-full">
+        <div className="container mx-auto">
+            <div className="flex bg-gray-200 min-h-screen">
+                <Sidebar/>
+                <div className="flex-1 p-10 ml-62">
+                    <TokenTimer/>
+                    <div className="mt-8">
+                        <h1 className="text-2xl font-bold mb-4">Edit Product Gallery</h1>
+                        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded shadow">
+                            {data.image && (
                                 <div className="mb-4">
-                                    <label htmlFor="image" className="block font-semibold mb-2">New image:</label>
-                                    <input
-                                        type="file"
-                                        id="image"
-                                        accept="image/*"
-                                        onChange={(e) => {
-                                            if (e.target.files && e.target.files[0]) {
-                                                setImageFile(e.target.files[0]);
-                                                setPreviewURL(URL.createObjectURL(e.target.files[0]));
-                                            }
-                                        }}
-                                        className="border border-gray-300 rounded p-2 w-full"
+                                    <label className="block font-semibold mb-2">Current image:</label>
+                                    <Image
+                                        src={`${process.env.NEXT_PUBLIC_API_URL}/${data.image.replace(/\\/g, '/')}`}
+                                        alt="Gallery Image"
+                                        width={200}
+                                        height={200}
+                                        className="w-64 rounded"
                                     />
                                 </div>
+                            )}
+                            <div className="mb-4 flex space-x-4">
+                                <div className="w-full">
+                                    <div className="mb-4">
+                                        <label htmlFor="image" className="block font-semibold mb-2">New image:</label>
+                                        <input
+                                            type="file"
+                                            id="image"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                if (e.target.files && e.target.files[0]) {
+                                                    setImageFile(e.target.files[0]);
+                                                    setPreviewURL(URL.createObjectURL(e.target.files[0]));
+                                                }
+                                            }}
+                                            className="border border-gray-300 rounded p-2 w-full"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="w-full">
+                                    <label className="block text-gray-700 font-semibold mb-2">
+                                        Product:
+                                    </label>
+                                    <select
+                                        id="product_id"
+                                        name="product_id"
+                                        value={String(data.product_id)}
+                                        onChange={(e) => setData((prev) => ({...prev, product_id: e.target.value}))}
+                                        required
+                                        className="border border-gray-300 rounded p-2 w-full focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-150"
+                                    >
+                                        <option value="">Select product</option>
+                                        {products.map((product) => (
+                                            <option key={product.id} value={String(product.id)}>
+                                                {product.product_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
-                            <div className="w-full">
-                                <label className="block text-gray-700 font-semibold mb-2">
-                                    Product:
-                                </label>
-                                <select
-                                    id="product_id"
-                                    name="product_id"
-                                    value={String(data.product_id)}
-                                    onChange={(e) => setData((prev) => ({ ...prev, product_id: e.target.value }))}
-                                    required
-                                    className="border border-gray-300 rounded p-2 w-full focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-150"
-                                >
-                                    <option value="">Select product</option>
-                                    {products.map((product) => (
-                                        <option key={product.id} value={String(product.id)}>
-                                            {product.product_name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
 
-                        {previewURL && (
-                            <div className="mb-4">
-                                <label className="block font-semibold mb-2">Preview of New Image:</label>
-                                <Image
-                                    src={previewURL}
-                                    alt="Preview"
-                                    width={200}
-                                    height={200}
-                                    className="w-64 rounded"
-                                />
-                            </div>
-                        )}
+                            {previewURL && (
+                                <div className="mb-4">
+                                    <label className="block font-semibold mb-2">Preview of New Image:</label>
+                                    <Image
+                                        src={previewURL}
+                                        alt="Preview"
+                                        width={200}
+                                        height={200}
+                                        className="w-64 rounded"
+                                    />
+                                </div>
+                            )}
 
-                        <button
-                            type="submit"
-                            className="bg text-white px-4 py-2 rounded flex items-center hover:bg-blue-700"
-                        >
-                            <DocumentIcon className="size-5 mr-2" />
-                            Save
-                        </button>
-                    </form>
+                            <button
+                                type="submit"
+                                className="bg text-white px-4 py-2 rounded flex items-center hover:bg-blue-700"
+                            >
+                                <DocumentIcon className="size-5 mr-2"/>
+                                Save
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
+
+
     );
 };
 
