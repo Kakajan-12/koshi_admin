@@ -131,3 +131,7 @@ body {
 .ProseMirror ::selection {
   background: rgba(0, 100, 255, 0.2) !important;
 }
+
+.tab-content{
+  background-color: white;
+}
