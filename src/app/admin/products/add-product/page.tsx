@@ -287,7 +287,6 @@ const AddProduct = () => {
                                                     content={product_serves}
                                                     onChange={(e) => setProductServes(e.target.value)}
                                                     type="text"
-                                                    required
                                                     className="border border-gray-300 rounded p-2 w-full"
                                                 />
                                             </div>

@@ -6,15 +6,22 @@ import Link from "next/link";
 import { EyeIcon } from "@heroicons/react/16/solid";
 import React, { useEffect, useState } from "react";
 
+// Обновленный интерфейс
 interface Order {
     id: number;
-    user_id: number;
-    email: string;
+    user_id: number | null;
+    email: string | null;        // для зарегистрированных
     name: string;
     total: number;
     status: string;
     createdAt: string;
-    order_data: Record<string, unknown>; // ✅ исправлено: вместо any
+    order_data: Record<string, unknown>;
+    // Добавляем поля для гостей
+    is_guest?: boolean;
+    guest_name?: string | null;
+    guest_email?: string | null;
+    guest_phone?: string | null;
+    guest_address?: string | null;
 }
 
 const Orders = () => {
@@ -48,7 +55,7 @@ const Orders = () => {
 
                 setOrders(Array.isArray(data) ? data : []);
                 setValidToken(true);
-            } catch (err: unknown) { // ✅ исправлено: типизирована ошибка
+            } catch (err: unknown) {
                 if (err instanceof Error) {
                     console.error("Fetch error:", err.message);
                     setError(err.message);
@@ -81,6 +88,22 @@ const Orders = () => {
         } catch {
             return "Invalid Date";
         }
+    };
+
+    // Функция для получения email в зависимости от типа заказа
+    const getCustomerEmail = (order: Order): string => {
+        if (order.is_guest) {
+            return order.guest_email || 'No email provided';
+        }
+        return order.email || 'N/A';
+    };
+
+    // Функция для получения имени с учетом типа заказа
+    const getCustomerName = (order: Order): string => {
+        if (order.is_guest) {
+            return order.guest_name || 'Guest';
+        }
+        return order.name || 'Customer';
     };
 
     if (loading) {
@@ -131,16 +154,26 @@ const Orders = () => {
                                 </tr>
                             ) : (
                                 orders.map((order) => (
-                                    <tr key={order.id} className="border-b">
-                                        <td className="py-3 px-4">#{order.id}</td>
-                                        <td className="py-3 px-4">{order.name || "Guest"}</td>
-                                        <td className="py-3 px-4">{order.email || "N/A"}</td>
-                                        <td className="py-3 px-4">£{Number(order.total).toFixed(2)}</td>
+                                    <tr key={order.id} className="border-b hover:bg-gray-50">
+                                        <td className="py-3 px-4 font-medium">#{order.id}</td>
+                                        <td className="py-3 px-4">
+                                            <div className="flex items-center">
+                                                {getCustomerName(order)}
+                                                {order.is_guest && (
+                                                    <span className="ml-2 px-2 py-0.5 text-xs bg-purple-100 text-purple-800 rounded-full">
+                                                        Guest
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="py-3 px-4">
+                                            {getCustomerEmail(order)}
+                                        </td>
+                                        <td className="py-3 px-4 font-medium">£{Number(order.total).toFixed(2)}</td>
                                         <td className="py-3 px-4">
                                             <span
-                                                className={`px-2 py-1 rounded text-white text-sm ${
-                                                    order.status?.toLowerCase() === "paid" ||
-                                                    order.status?.toLowerCase() === "completed"
+                                                className={`px-3 py-1 rounded-full text-white text-sm font-medium ${
+                                                    order.status?.toLowerCase() === "paid"
                                                         ? "bg-green-600"
                                                         : order.status?.toLowerCase() === "pending"
                                                             ? "bg-yellow-500"
@@ -150,11 +183,11 @@ const Orders = () => {
                                                 {order.status || "Unknown"}
                                             </span>
                                         </td>
-                                        <td className="py-3 px-4">{formatDate(order.createdAt)}</td>
+                                        <td className="py-3 px-4 text-gray-600">{formatDate(order.createdAt)}</td>
                                         <td className="py-3 px-4 text-center">
                                             <Link
                                                 href={`/admin/orders/view-orders/${order.id}`}
-                                                className="bg-green-700 text-white py-2 px-4 rounded-md inline-flex items-center hover:bg-green-800"
+                                                className="bg-green-700 text-white py-2 px-4 rounded-md inline-flex items-center hover:bg-green-800 transition-colors"
                                             >
                                                 <EyeIcon className="h-5 w-5 mr-1"/>
                                                 View
@@ -169,8 +202,6 @@ const Orders = () => {
                 </div>
             </div>
         </div>
-
-
     );
 };
 

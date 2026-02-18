@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { IoLocationSharp } from "react-icons/io5";
+import {IoLocationSharp, IoTimeOutline} from "react-icons/io5";
 import { LuCake} from "react-icons/lu";
 import { LiaAllergiesSolid } from "react-icons/lia";
 import { FaIndent  } from "react-icons/fa";
@@ -9,8 +9,16 @@ import { TbCategoryFilled } from "react-icons/tb";
 import { RiLinksLine } from "react-icons/ri";
 import { VscFeedback } from "react-icons/vsc";
 import { GrGallery } from "react-icons/gr";
+import {TfiLayoutSlider} from "react-icons/tfi";
 
 const menuGroups = [
+    {
+        title: "Sliders",
+        key: "slides",
+        links: [
+            { href: "/admin/sliders", label: "Sliders", icon: TfiLayoutSlider }
+        ],
+    },
     {
         title: "Products",
         key: "products",
@@ -41,6 +49,7 @@ const menuGroups = [
         links: [
             { href: "/admin/contact", label: "Contact", icon: IoLocationSharp },
             { href: "/admin/social-links", label: "Social Links", icon: RiLinksLine  },
+            { href: "/admin/open-time", label: "Opening times", icon: IoTimeOutline  },
         ],
     },
     {

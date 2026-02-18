@@ -2,24 +2,23 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
-import TipTapEditor from '@/Components/TipTapEditor';
 import Sidebar from "@/Components/Sidebar";
 import TokenTimer from "@/Components/TokenTimer";
 import { DocumentIcon } from "@heroicons/react/16/solid";
 import Image from "next/image";
 
-interface BlogData {
-    name: string;
+interface Data {
+    title: string;
     text: string;
     image: string;
 }
 
-const EditTestimonials = () => {
+const EditSlider = () => {
     const { id } = useParams();
     const router = useRouter();
 
-    const [data, setData] = useState<BlogData>({
-        name: '',
+    const [data, setData] = useState<Data>({
+        title: '',
         text: '',
         image: ''
     });
@@ -35,19 +34,17 @@ const EditTestimonials = () => {
                 const token = localStorage.getItem('auth_token');
                 if (!token) throw new Error("Токен не найден");
 
-                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/testimonials/${id}`, {
+                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/sliders/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
 
-                console.log("Ответ от сервера:", response.data);
-
                 if (Array.isArray(response.data) && response.data.length > 0) {
                     const rawData = response.data[0];
 
                     setData({
-                        name: rawData.name || '',
+                        title: rawData.title || '',
                         text: rawData.text || '',
                         image: rawData.image || '',
                     });
@@ -66,14 +63,13 @@ const EditTestimonials = () => {
         fetchData();
     }, [id]);
 
-    const handleEditorChange = (name: keyof BlogData, content: string) => {
-        setData(prev => ({ ...prev, [name]: content }));
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+        const { name, value } = e.target;
+        setData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setData((prev) => ({ ...prev, [name]: value }));
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -83,7 +79,7 @@ const EditTestimonials = () => {
             if (!token) throw new Error("Токен не найден");
 
             const formData = new FormData();
-            formData.append('name', data.name);
+            formData.append('title', data.title);
             formData.append('text', data.text);
 
             if (imageFile) {
@@ -93,7 +89,7 @@ const EditTestimonials = () => {
             }
 
             await axios.put(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/testimonials/${id}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/api/sliders/${id}`,
                 formData,
                 {
                     headers: {
@@ -103,13 +99,12 @@ const EditTestimonials = () => {
                 }
             );
 
-            router.push(`/admin/testimonials/view-testimonials/${id}`);
+            router.push(`/admin/sliders/view-slider/${id}`);
         } catch (err) {
             console.error('Ошибка при сохранении:', err);
             setError('Ошибка при сохранении данных');
         }
     };
-
 
 
     if (loading) return <p>Загрузка...</p>;
@@ -122,7 +117,7 @@ const EditTestimonials = () => {
                 <div className="flex-1 p-10 ml-62">
                     <TokenTimer/>
                     <div className="mt-8">
-                        <h1 className="text-2xl font-bold mb-4">Edit Testimonials</h1>
+                        <h1 className="text-2xl font-bold mb-4">Edit slider</h1>
                         <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded shadow max-w-3xl">
                             {data.image && (
                                 <div className="mb-4">
@@ -156,10 +151,10 @@ const EditTestimonials = () => {
                                        defaultChecked/>
                                 <div className="tab-content bg-base-100 border-base-300 p-6">
                                     <div className="mb-4">
-                                        <label className="block font-semibold mb-2">Name</label>
+                                        <label className="block font-semibold mb-2">Title</label>
                                         <input
-                                            name="name"
-                                            value={data.name}
+                                            name="title"
+                                            value={data.title}
                                             onChange={handleChange}
                                             type="text"
                                             required
@@ -168,10 +163,14 @@ const EditTestimonials = () => {
                                     </div>
                                     <div className="mb-4">
                                         <label className="block font-semibold mb-2">Text:</label>
-                                        <TipTapEditor
-                                            content={data.text}
-                                            onChange={content => handleEditorChange('text', content)}
-                                        />
+                                        <textarea
+                                            name="text"
+                                            value={data.text}
+                                            onChange={handleChange}
+                                            rows={2}
+                                            required
+                                            className="border border-gray-300 rounded p-2 w-full"
+                                        ></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -193,4 +192,4 @@ const EditTestimonials = () => {
     );
 };
 
-export default EditTestimonials;
+export default EditSlider;

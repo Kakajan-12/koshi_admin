@@ -102,7 +102,7 @@ const ProductTypes = () => {
                             <tbody className="divide-y-1 divide-gray-200">
                             {types.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="text-center py-4">No sliders available</td>
+                                    <td colSpan={5} className="text-center py-4">No data available</td>
                                 </tr>
                             ) : (
                                 types.map((type) => (

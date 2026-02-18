@@ -17,7 +17,7 @@ type Data = {
     [key: string]: string | undefined;
 };
 
-const ViewTestimonials = () => {
+const ViewSlider = () => {
     const {id} = useParams();
     const router = useRouter();
 
@@ -30,7 +30,7 @@ const ViewTestimonials = () => {
         const fetchData = async () => {
             try {
                 const token = localStorage.getItem('auth_token');
-                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/testimonials/${id}`, {
+                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/sliders/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -60,12 +60,12 @@ const ViewTestimonials = () => {
         setIsDeleting(true);
         try {
             const token = localStorage.getItem('auth_token');
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/testimonials/${id}`, {
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/sliders/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            router.push('/admin/testimonials');
+            router.push('/admin/sliders');
         } catch (err) {
             console.error('Ошибка при удалении:', err);
         } finally {
@@ -85,7 +85,7 @@ const ViewTestimonials = () => {
                     <TokenTimer/>
                     <div className="mt-8">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-2xl font-bold">View Testimonials</h2>
+                            <h2 className="text-2xl font-bold">View slider</h2>
                             <Menu as="div" className="relative inline-block text-left">
                                 <Menu.Button
                                     className="inline-flex items-center gap-2 rounded-md bg-gray-800 py-1.5 px-3 text-sm font-semibold text-white hover:bg-gray-700">
@@ -107,7 +107,7 @@ const ViewTestimonials = () => {
                                             <Menu.Item>
                                                 {({active}) => (
                                                     <button
-                                                        onClick={() => router.push(`/admin/testimonials/edit-testimonials/${id}`)}
+                                                        onClick={() => router.push(`/admin/sliders/edit-slider/${id}`)}
                                                         className={`${
                                                             active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
                                                         } group flex items-center w-full px-4 py-2 text-sm`}
@@ -152,10 +152,9 @@ const ViewTestimonials = () => {
 
                             <div className="flex-1 space-y-10 divide-y-1">
                                 <div>
-                                    <div className="font-bold text-lg mb-2">Comment</div>
-                                    {data.name && (
-                                        <div><strong>Name:</strong>
-                                            <div dangerouslySetInnerHTML={{__html: data.name}}/>
+                                    {data.title && (
+                                        <div><strong>Title:</strong>
+                                            <div dangerouslySetInnerHTML={{__html: data.title}}/>
                                         </div>
                                     )}
                                     {data.text && (
@@ -173,7 +172,7 @@ const ViewTestimonials = () => {
                         <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
                             <div className="bg-white p-6 rounded shadow-md w-96">
                                 <h2 className="text-lg font-bold mb-4">Remove testimonials</h2>
-                                <p className="mb-6">Are you sure you want to delete this testimonials?</p>
+                                <p className="mb-6">Are you sure you want to delete this slider?</p>
                                 <div className="flex justify-end space-x-4">
                                     <button
                                         className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
@@ -201,4 +200,4 @@ const ViewTestimonials = () => {
     );
 };
 
-export default ViewTestimonials;
+export default ViewSlider;
