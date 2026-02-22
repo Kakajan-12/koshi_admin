@@ -162,6 +162,16 @@ const ViewSlider = () => {
                                             <div dangerouslySetInnerHTML={{__html: data.text}}/>
                                         </div>
                                     )}
+                                    {data.link && (
+                                        <div><strong>Link:</strong>
+                                            <p>{data.link}</p>
+                                        </div>
+                                    )}
+                                    {data.link && (
+                                        <div><strong>Link text:</strong>
+                                            <p>{data.link_text}</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

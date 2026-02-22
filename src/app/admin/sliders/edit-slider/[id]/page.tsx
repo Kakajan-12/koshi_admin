@@ -1,26 +1,30 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, {useEffect, useState} from 'react';
+import {useParams, useRouter} from 'next/navigation';
 import axios from 'axios';
 import Sidebar from "@/Components/Sidebar";
 import TokenTimer from "@/Components/TokenTimer";
-import { DocumentIcon } from "@heroicons/react/16/solid";
+import {DocumentIcon} from "@heroicons/react/16/solid";
 import Image from "next/image";
 
 interface Data {
     title: string;
     text: string;
     image: string;
+    link: string;
+    link_text: string;
 }
 
 const EditSlider = () => {
-    const { id } = useParams();
+    const {id} = useParams();
     const router = useRouter();
 
     const [data, setData] = useState<Data>({
         title: '',
         text: '',
-        image: ''
+        image: '',
+        link: '',
+        link_text: ''
     });
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(true);
@@ -47,6 +51,8 @@ const EditSlider = () => {
                         title: rawData.title || '',
                         text: rawData.text || '',
                         image: rawData.image || '',
+                        link: rawData.link || '',
+                        link_text: rawData.link_text || '',
                     });
 
                 } else {
@@ -66,8 +72,8 @@ const EditSlider = () => {
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
-        const { name, value } = e.target;
-        setData(prev => ({ ...prev, [name]: value }));
+        const {name, value} = e.target;
+        setData(prev => ({...prev, [name]: value}));
     };
 
 
@@ -81,6 +87,8 @@ const EditSlider = () => {
             const formData = new FormData();
             formData.append('title', data.title);
             formData.append('text', data.text);
+            formData.append('link', data.link);
+            formData.append('link_text', data.link_text);
 
             if (imageFile) {
                 formData.append('image', imageFile);
@@ -145,36 +153,50 @@ const EditSlider = () => {
                                     className="border border-gray-300 rounded p-2 w-full"
                                 />
                             </div>
-
-                            <div className="tabs tabs-lift">
-                                <input type="radio" name="my_tabs_3" className="tab" aria-label="Comment"
-                                       defaultChecked/>
-                                <div className="tab-content bg-base-100 border-base-300 p-6">
-                                    <div className="mb-4">
-                                        <label className="block font-semibold mb-2">Title</label>
-                                        <input
-                                            name="title"
-                                            value={data.title}
-                                            onChange={handleChange}
-                                            type="text"
-                                            required
-                                            className="border border-gray-300 rounded p-2 w-full"
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block font-semibold mb-2">Text:</label>
-                                        <textarea
-                                            name="text"
-                                            value={data.text}
-                                            onChange={handleChange}
-                                            rows={2}
-                                            required
-                                            className="border border-gray-300 rounded p-2 w-full"
-                                        ></textarea>
-                                    </div>
-                                </div>
+                            <div className="mb-4">
+                                <label className="block font-semibold mb-2">Title</label>
+                                <input
+                                    name="title"
+                                    value={data.title}
+                                    onChange={handleChange}
+                                    type="text"
+                                    required
+                                    className="border border-gray-300 rounded p-2 w-full"
+                                />
                             </div>
-
+                            <div className="mb-4">
+                                <label className="block font-semibold mb-2">Text:</label>
+                                <textarea
+                                    name="text"
+                                    value={data.text}
+                                    onChange={handleChange}
+                                    rows={2}
+                                    required
+                                    className="border border-gray-300 rounded p-2 w-full"
+                                ></textarea>
+                            </div>
+                            <div className="mb-4">
+                                <label className="block font-semibold mb-2">Link</label>
+                                <input
+                                    name="link"
+                                    value={data.link}
+                                    onChange={handleChange}
+                                    type="text"
+                                    required
+                                    className="border border-gray-300 rounded p-2 w-full"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block font-semibold mb-2">Link text</label>
+                                <input
+                                    name="link_text"
+                                    value={data.link_text}
+                                    onChange={handleChange}
+                                    type="text"
+                                    required
+                                    className="border border-gray-300 rounded p-2 w-full"
+                                />
+                            </div>
                             <button
                                 type="submit"
                                 className="bg text-white px-4 py-2 rounded flex items-center hover:bg-blue-700"

@@ -9,7 +9,9 @@ const AddSlider = () => {
     const [isClient, setIsClient] = useState(false);
     const [image, setImage] = useState<File | null>(null);
     const [text, setText] = useState('');
-    const [title,setTitle] = useState('');
+    const [title, setTitle] = useState('');
+    const [link, setLink] = useState('');
+    const [linkText, setLinkText] = useState('');
 
 
     const router = useRouter();
@@ -31,6 +33,8 @@ const AddSlider = () => {
         if (image) formData.append('image', image);
         formData.append('title', title ?? '');
         formData.append('text', text ?? '');
+        formData.append('link', link ?? '');
+        formData.append('link_text', linkText ?? '');
 
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sliders`, {
@@ -47,6 +51,8 @@ const AddSlider = () => {
                 setImage(null);
                 setTitle('');
                 setText('');
+                setLink('')
+                setLinkText('');
                 router.push('/admin/sliders');
             } else {
                 const errorText = await response.text();
@@ -93,32 +99,46 @@ const AddSlider = () => {
 
                             {isClient && (
                                 <>
-                                    <div className="tabs tabs-lift">
-                                        <input type="radio" name="my_tabs_3" className="tab" aria-label="Testimonials"
-                                               defaultChecked/>
-                                        <div className="tab-content bg-base-100 border-base-300 p-6">
-                                            <div className="mb-4">
-                                                <label className="block text-gray-700 font-semibold mb-2">Title:</label>
-                                                <input
-                                                    value={title}
-                                                    onChange={(e) => setTitle(e.target.value)}
-                                                    type="text"
-                                                    required
-                                                    className="border border-gray-300 rounded p-2 w-full"
-                                                />
-                                            </div>
-                                            <div className="mb-4">
-                                                <label
-                                                    className="block text-gray-700 font-semibold mb-2">Text:</label>
-                                                <textarea
-                                                    value={text}
-                                                    onChange={(e) => setText(e.target.value)}
-                                                    rows={2}
-                                                    required
-                                                    className="border border-gray-300 rounded p-2 w-full"
-                                                ></textarea>
-                                            </div>
-                                        </div>
+                                    <div className="mb-4">
+                                        <label className="block text-gray-700 font-semibold mb-2">Title:</label>
+                                        <input
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                            type="text"
+                                            required
+                                            className="border border-gray-300 rounded p-2 w-full"
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label
+                                            className="block text-gray-700 font-semibold mb-2">Text:</label>
+                                        <textarea
+                                            value={text}
+                                            onChange={(e) => setText(e.target.value)}
+                                            rows={2}
+                                            required
+                                            className="border border-gray-300 rounded p-2 w-full"
+                                        ></textarea>
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block text-gray-700 font-semibold mb-2">Link:</label>
+                                        <input
+                                            value={link}
+                                            onChange={(e) => setLink(e.target.value)}
+                                            type="text"
+                                            required
+                                            className="border border-gray-300 rounded p-2 w-full"
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block text-gray-700 font-semibold mb-2">Link text:</label>
+                                        <input
+                                            value={linkText}
+                                            onChange={(e) => setLinkText(e.target.value)}
+                                            type="text"
+                                            required
+                                            className="border border-gray-300 rounded p-2 w-full"
+                                        />
                                     </div>
                                 </>
                             )}
