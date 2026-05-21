@@ -36,6 +36,7 @@ const AddProduct = () => {
     const [variants, setVariants] = useState<Variant[]>([
         { variant_name: '', price: '' },
     ]);
+    const [activeTab, setActiveTab] = useState<'content' | 'allergens'>('content');
 
 
     const router = useRouter();
@@ -255,10 +256,32 @@ const AddProduct = () => {
 
                             {isClient && (
                                 <>
-                                    <div className="tabs tabs-lift">
-                                        <input type="radio" name="my_tabs_1" className="tab" aria-label="Content"
-                                               defaultChecked/>
-                                        <div className="tab-content bg-base-100 border-base-300 p-6">
+                                    <div className="flex border-b border-gray-300 mb-0">
+                                        <button
+                                            type="button"
+                                            onClick={() => setActiveTab('content')}
+                                            className={`px-6 py-2 font-semibold border-b-2 -mb-px transition-colors ${
+                                                activeTab === 'content'
+                                                    ? 'border-blue-600 text-blue-600 bg-white'
+                                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                            }`}
+                                        >
+                                            Content
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setActiveTab('allergens')}
+                                            className={`px-6 py-2 font-semibold border-b-2 -mb-px transition-colors ${
+                                                activeTab === 'allergens'
+                                                    ? 'border-blue-600 text-blue-600 bg-white'
+                                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                            }`}
+                                        >
+                                            Allergens
+                                        </button>
+                                    </div>
+                                    <div className="border border-gray-300 rounded-b-lg p-6 mb-4">
+                                        <div className={activeTab === 'content' ? 'block' : 'hidden'}>
                                             <div className="mb-4">
                                                 <label className="block text-gray-700 font-semibold mb-2">Product
                                                     Name:</label>
@@ -361,8 +384,7 @@ const AddProduct = () => {
                                                 </button>
                                             </div>
                                         </div>
-                                        <input type="radio" name="my_tabs_1" className="tab" aria-label="Allergens"/>
-                                        <div className="tab-content bg-base-100 border-base-300 p-6">
+                                        <div className={activeTab === 'allergens' ? 'block' : 'hidden'}>
                                             <h3 className="text-lg font-semibold mb-4">Select Allergens</h3>
                                             <div className="grid grid-cols-2 gap-2">
                                                 {allergens.map((allergen) => (
@@ -378,7 +400,6 @@ const AddProduct = () => {
                                                 ))}
                                             </div>
                                         </div>
-
                                     </div>
                                 </>
                             )}
