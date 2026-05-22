@@ -4,7 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -38,12 +37,12 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.color{
-  color:#002A5F
+.color {
+  color: #002a5f;
 }
 
-.bg{
-  background-color: #002A5F;
+.bg {
+  background-color: #002a5f;
 }
 
 .tiptap-content {
@@ -145,10 +144,20 @@ body {
   background: rgba(0, 100, 255, 0.2) !important;
 }
 
-.tab-content{
+.tab-content {
   background-color: white;
 }
-.tab{
-  background-color: white;
-  color: black;
+.tabs-lift:has(.tab-content)
+  > .tab:not(.tab-active):not([aria-selected="true"]):not(:checked) {
+  --tab-border: 0 0 0 0;
+  --tab-border-colors: #0000 #0000 #0000 #0000;
+  --tab-paddings: var(--tab-p) var(--tab-p) 0 var(--tab-p);
+  background-color: transparent;
+}
+
+.tabs-lift:has(.tab-content)
+  > .tab:is(.tab-active, [aria-selected="true"], :checked) {
+  --tab-border: 1px 1px 0 1px;
+  --tab-border-colors: var(--border) var(--border) #0000 var(--border);
+  --tab-paddings: 0.2rem 0.9rem 0.2rem 0.9rem;
 }
