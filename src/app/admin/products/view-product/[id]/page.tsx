@@ -1,296 +1,163 @@
 'use client';
-import React, {useEffect, useState, Fragment} from 'react';
-import {useParams, useRouter} from 'next/navigation';
-import axios, {AxiosError} from 'axios';
-import Image from 'next/image';
-import Sidebar from '@/Components/Sidebar';
-import TokenTimer from '@/Components/TokenTimer';
-import {Menu, Transition} from '@headlessui/react';
-import {
-    ChevronDownIcon,
-    PencilIcon,
-    TrashIcon,
-} from '@heroicons/react/16/solid';
-import {FaPoundSign} from "react-icons/fa";
 
-type Allergen = {
+import React, { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { PencilSquareIcon, TrashIcon } from '@heroicons/react/20/solid';
+import AdminShell, { PageHeader } from '@/Components/AdminShell';
+import Button from '@/Components/ui/Button';
+import { Card, CardBody, CardHeader, DetailList, DetailRow } from '@/Components/ui/Card';
+import { Alert } from '@/Components/ui/Form';
+import { Badge, ConfirmDialog, ErrorState, LoadingState } from '@/Components/ui/Feedback';
+import { formatMoney, uploadUrl } from '@/lib/api';
+import { api, errorMessage } from '@/lib/http';
+import { useRecord } from '@/lib/useRecord';
+import { safeHtml } from '@/lib/html';
+import ProductGalleryManager from '@/Components/ProductGalleryManager';
+
+type Product = {
     id: number;
-    name: string;
-};
-
-type Variant = { id: number; variant_name: string; price: number };
-
-type Data = {
-    id: number;
-    main_image?: string;
-    loved?: string;
-    product_name?: string;
-    product_desc?: string;
-    product_serves?: string;
-    product_ingredients?: string;
-    product_category?: string;
-    product_types?: string;
-    product_availability?: string;
+    main_image: string;
+    loved: number;
+    product_name: string;
+    product_desc: string;
+    product_serves: string;
+    product_ingredients: string;
     category_name?: string;
     type_name?: string;
-    delivery?: string;
-    notice?: string;
-    allergens?: Allergen[];
-    variants?: Variant[];
+    product_availability: number;
+    delivery: string;
+    notice: string | null;
+    allergens: { id: number; name: string }[];
+    variants: { id: number; variant_name: string; price: number }[];
 };
 
+const isEmptyHtml = (html?: string | null) => !html || !html.replace(/<[^>]*>/g, '').trim();
 
-const ViewProducts = () => {
-    const {id} = useParams();
+function HtmlSection({ title, html }: { title: string; html?: string | null }) {
+    if (isEmptyHtml(html)) return null;
+    return (
+        <Card>
+            <CardHeader title={title} />
+            <CardBody>
+                <div className="tiptap-content" dangerouslySetInnerHTML={{ __html: safeHtml(html) }} />
+            </CardBody>
+        </Card>
+    );
+}
+
+const ViewProduct = () => {
+    const { id } = useParams();
     const router = useRouter();
-
-    const [data, setData] = useState<Data | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [showModal, setShowModal] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const token = localStorage.getItem('auth_token');
-                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/product/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                if (response.data && typeof response.data === 'object') {
-                    setData(response.data);
-                } else {
-                    setError('Данные не найдены');
-                }
-            } catch (err) {
-                const axiosError = err as AxiosError;
-                console.error(axiosError);
-                setError('Ошибка при получении данных');
-
-                if (axios.isAxiosError(axiosError) && axiosError.response?.status === 401) {
-                    router.push('/');
-                }
-            }
-        };
-
-        if (id) fetchData();
-    }, [id, router]);
-
+    const { data, loading, error } = useRecord<Product>(id ? `/api/product/${id}` : null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const handleDelete = async () => {
-        setIsDeleting(true);
+        setDeleting(true);
         try {
-            const token = localStorage.getItem('auth_token');
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/product/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            await api(`/api/product/${id}`, { method: 'DELETE' });
             router.push('/admin/products');
         } catch (err) {
-            console.error('Ошибка при удалении:', err);
-        } finally {
-            setIsDeleting(false);
-            setShowModal(false);
+            setDeleteError(errorMessage(err, 'Could not delete product'));
+            setDeleting(false);
+            setConfirmOpen(false);
         }
     };
 
-    if (error) return <div className="text-red-500 p-4">{error}</div>;
-    if (!data) return <div className="p-4">Загрузка...</div>;
-
     return (
-        <div className="container mx-auto">
-            <div className="flex bg-gray-200 min-h-screen">
-                <Sidebar/>
-                <div className="flex-1 p-10 ml-62">
-                    <TokenTimer/>
-                    <div className="mt-8">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-2xl font-bold">View Product</h2>
-                            <Menu as="div" className="relative inline-block text-left">
-                                <Menu.Button
-                                    className="inline-flex items-center gap-2 rounded-md bg-gray-800 py-1.5 px-3 text-sm font-semibold text-white hover:bg-gray-700">
-                                    Options
-                                    <ChevronDownIcon className="w-4 h-4 fill-white/60"/>
-                                </Menu.Button>
-                                <Transition
-                                    as={Fragment}
-                                    enter="transition ease-out duration-100"
-                                    enterFrom="transform opacity-0 scale-95"
-                                    enterTo="transform opacity-100 scale-100"
-                                    leave="transition ease-in duration-75"
-                                    leaveFrom="transform opacity-100 scale-100"
-                                    leaveTo="transform opacity-0 scale-95"
-                                >
-                                    <Menu.Items
-                                        className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 z-50">
-                                        <div className="py-1">
-                                            <Menu.Item>
-                                                {({active}) => (
-                                                    <button
-                                                        onClick={() => router.push(`/admin/products/edit-product/${id}`)}
-                                                        className={`${
-                                                            active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                                                        } group flex items-center w-full px-4 py-2 text-sm`}
-                                                    >
-                                                        <PencilIcon className="w-4 h-4 mr-2 text-gray-400"/>
-                                                        Edit
-                                                    </button>
-                                                )}
-                                            </Menu.Item>
-                                            <div className="border-t border-gray-100"/>
-                                            <Menu.Item>
-                                                {({active}) => (
-                                                    <button
-                                                        onClick={() => setShowModal(true)}
-                                                        className={`${
-                                                            active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                                                        } group flex items-center w-full px-4 py-2 text-sm`}
-                                                    >
-                                                        <TrashIcon className="w-4 h-4 mr-2 text-gray-400"/>
-                                                        Delete
-                                                    </button>
-                                                )}
-                                            </Menu.Item>
-                                        </div>
-                                    </Menu.Items>
-                                </Transition>
-                            </Menu>
-                        </div>
+        <AdminShell>
+            <PageHeader
+                title={data?.product_name ?? 'Product'}
+                back={{ href: '/admin/products', label: 'Products' }}
+                actions={
+                    data && (
+                        <>
+                            <Button variant="danger" onClick={() => setConfirmOpen(true)} icon={<TrashIcon className="size-4" />}>
+                                Delete
+                            </Button>
+                            <Button href={`/admin/products/edit-product/${id}`} icon={<PencilSquareIcon className="size-4" />}>
+                                Edit
+                            </Button>
+                        </>
+                    )
+                }
+            />
 
-                        <div className="bg-white p-6 rounded-md shadow space-x-6 flex">
-                            <div className="flex flex-col">
-                                <div>
-                                    <div className="font-bold text-xl">Main Image</div>
-                                    {data.main_image && (
-                                        <Image
-                                            src={`${process.env.NEXT_PUBLIC_API_URL}/${data.main_image.replace('\\', '/')}`}
-                                            alt="image"
-                                            width={600}
-                                            height={400}
-                                            className="rounded-md border border-black"
-                                        />
-                                    )}
-                                </div>
-                                <div>
-                                    <div>
-                                        <strong>Loved:</strong>
-                                        <p>{data.loved ? `Yes` : `No`}</p>
-                                    </div>
-                                    <div>
-                                        <strong>Available:</strong>
-                                        <p>{data.product_availability ? `Yes` : `No`}</p>
-                                    </div>
-                                </div>
+            {deleteError && <div className="mb-4"><Alert>{deleteError}</Alert></div>}
 
-                                {Array.isArray(data.allergens) && data.allergens.length > 0 && (
-                                    <div className="mt-4">
-                                        <strong>Allergens:</strong>
-                                        <ul className="list-disc list-inside">
-                                            {data.allergens.map((allergen: Allergen) => (
-                                                <li key={allergen.id}>{allergen.name}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-
-
-                            </div>
-
-                            <div className="flex-1 space-y-10">
-                                {data.product_name && (
-                                    <div><strong>Product Name:</strong>
-                                        <div dangerouslySetInnerHTML={{__html: data.product_name}}/>
-                                    </div>
-                                )}
-                                {Array.isArray(data.variants) && data.variants.length > 0 && (
-                                    <div className="mt-4">
-                                        <strong>Variants:</strong>
-                                        <ul className="list-disc list-inside">
-                                            {data.variants.map(v => (
-                                                <li key={v.id} className="flex space-x-2">
-                                                    <div>{v.variant_name}</div>
-                                                    — <div className="flex items-center"><FaPoundSign size={14}
-                                                                                                      style={{marginBottom: "2px"}}/> {v.price.toFixed(2)}
-                                                </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-
-                                {data.product_desc && (
-                                    <div><strong>Product Description:</strong>
-                                        <div dangerouslySetInnerHTML={{__html: data.product_desc}}/>
-                                    </div>
-                                )}
-                                {data.product_serves && (
-                                    <div><strong>Product Serves:</strong>
-                                        <div dangerouslySetInnerHTML={{__html: data.product_serves}}/>
-                                    </div>
-                                )}
-                                {data.product_ingredients && (
-                                    <div><strong>Product Ingredients:</strong>
-                                        <div dangerouslySetInnerHTML={{__html: data.product_ingredients}}/>
-                                    </div>
-                                )}
-                                {data.category_name && (
-                                    <div><strong>Product Category:</strong>
-                                        <div dangerouslySetInnerHTML={{__html: data.category_name}}/>
-                                    </div>
-                                )}
-                                {data.type_name && (
-                                    <div><strong>Product Type:</strong>
-                                        <div dangerouslySetInnerHTML={{__html: data.type_name}}/>
-                                    </div>
-                                )}
-                                {data.delivery && (
-                                    <div><strong>Delivery:</strong>
-                                        <div dangerouslySetInnerHTML={{__html: data.delivery}}/>
-                                    </div>
-                                )}
-                                {data.notice && (
-                                    <div><strong>Notice:</strong>
-                                        <div dangerouslySetInnerHTML={{__html: data.notice}}/>
-                                    </div>
-                                )}
-                            </div>
-
-                        </div>
+            {loading ? (
+                <Card><LoadingState rows={6} /></Card>
+            ) : error || !data ? (
+                <Card><ErrorState message={error ?? 'Product not found'} /></Card>
+            ) : (
+                <div className="grid gap-6 lg:grid-cols-3">
+                    <div className="space-y-6 lg:col-span-2">
+                        <HtmlSection title="Description" html={data.product_desc} />
+                        <Card>
+                            <CardHeader title="Sizes and prices" />
+                            {data.variants.length === 0 ? (
+                                <CardBody><p className="text-sm text-slate-500">No sizes — the product cannot be ordered.</p></CardBody>
+                            ) : (
+                                <ul className="divide-y divide-slate-100">
+                                    {data.variants.map((v) => (
+                                        <li key={v.id} className="flex items-center justify-between px-5 py-3 text-sm">
+                                            <span className="text-slate-700">{v.variant_name}</span>
+                                            <span className="font-medium text-slate-900">{formatMoney(v.price)}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </Card>
+                        <ProductGalleryManager productId={data.id} />
+                        <HtmlSection title="Serves" html={data.product_serves} />
+                        <HtmlSection title="Ingredients" html={data.product_ingredients} />
+                        <HtmlSection title="Delivery" html={data.delivery} />
+                        <HtmlSection title="Notice" html={data.notice} />
                     </div>
 
-                    {showModal && (
-                        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-                            <div className="bg-white p-6 rounded shadow-md w-96">
-                                <h2 className="text-lg font-bold mb-4">Remove product</h2>
-                                <p className="mb-6">Are you sure you want to delete this product?</p>
-                                <div className="flex justify-end space-x-4">
-                                    <button
-                                        className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
-                                        onClick={() => setShowModal(false)}
-                                        disabled={isDeleting}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
-                                        onClick={handleDelete}
-                                        disabled={isDeleting}
-                                    >
-                                        {isDeleting ? 'Deleting...' : 'Delete'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    <div className="space-y-6">
+                        <Card className="overflow-hidden">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={uploadUrl(data.main_image)} alt={data.product_name} className="aspect-square w-full object-cover" />
+                        </Card>
+                        <Card>
+                            <CardBody>
+                                <DetailList>
+                                    <DetailRow label="Status">
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {data.product_availability ? <Badge tone="green">In stock</Badge> : <Badge tone="amber">Pre-order</Badge>}
+                                            {data.loved ? <Badge tone="brand">Favourite</Badge> : null}
+                                        </div>
+                                    </DetailRow>
+                                    <DetailRow label="Category">{data.category_name ?? '—'}</DetailRow>
+                                    <DetailRow label="Type">{data.type_name ?? '—'}</DetailRow>
+                                    <DetailRow label="Allergens">
+                                        {data.allergens.length === 0 ? (
+                                            <span className="text-slate-400">None</span>
+                                        ) : (
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {data.allergens.map((a) => <Badge key={a.id}>{a.name}</Badge>)}
+                                            </div>
+                                        )}
+                                    </DetailRow>
+                                </DetailList>
+                            </CardBody>
+                        </Card>
+                    </div>
                 </div>
-            </div>
-        </div>
+            )}
 
-
+            <ConfirmDialog
+                open={confirmOpen}
+                title="Delete product?"
+                description="The product will be removed from the menu together with its sizes and gallery photos."
+                loading={deleting}
+                onConfirm={handleDelete}
+                onCancel={() => setConfirmOpen(false)}
+            />
+        </AdminShell>
     );
 };
 
-export default ViewProducts;
+export default ViewProduct;

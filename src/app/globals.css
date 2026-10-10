@@ -1,140 +1,79 @@
 @import "tailwindcss";
-@plugin "daisyui";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* Дизайн-токены админки: нейтральная серая база (slate) и фирменный розовый Koşi как акцент */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-brand-50: #fbf2f4;
+  --color-brand-100: #f6e2e6;
+  --color-brand-200: #ecc3cb;
+  --color-brand-300: #dc97a4;
+  --color-brand-400: #c9677a;
+  --color-brand-500: #b8485b;
+  --color-brand-600: #a03b4d;
+  --color-brand-700: #833b46;
+}
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  /* Админка только светлая: поля ввода, списки и полосы прокрутки браузера тоже */
+  color-scheme: light;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-.color{
-  color:#002A5F
+/* Единый вид фокуса с клавиатуры */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
 }
 
-.bg{
-  background-color: #002A5F;
-}
-
-/* TipTap editor default styles – для отображения контента */
+/* Контент из TipTap — в редакторе и на страницах просмотра */
 .tiptap-content {
-  font-family: system-ui, sans-serif;
-  line-height: 1.6;
-  font-size: 1rem;
-  color: #111827; /* text-gray-900 */
-
-  /* Убираем отступы по умолчанию */
-  margin: 0;
-  padding: 0;
+  line-height: 1.65;
+  font-size: 0.95rem;
+  color: #1e293b;
 }
-
-/* Заголовки */
-.tiptap-content h1 {
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 1.5rem 0 1rem;
-}
-.tiptap-content h2 {
-  font-size: 1.75rem;
-  font-weight: bold;
-  margin: 1.2rem 0 1rem;
-}
-.tiptap-content h3 {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin: 1rem 0 0.75rem;
-}
+.tiptap-content h1 { font-size: 1.75rem; font-weight: 700; margin: 1.25rem 0 0.75rem; }
+.tiptap-content h2 { font-size: 1.5rem; font-weight: 700; margin: 1.1rem 0 0.75rem; }
+.tiptap-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.5rem; }
 .tiptap-content h4,
 .tiptap-content h5,
-.tiptap-content h6 {
-  font-size: 1.25rem;
-  font-weight: bold;
-  margin: 0.8rem 0 0.5rem;
-}
-
-/* Параграфы */
-.tiptap-content p {
-  margin-bottom: 1rem;
-}
-
-/* Списки */
-.tiptap-content ul {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-  margin-bottom: 1rem;
-}
-.tiptap-content ol {
-  list-style-type: decimal;
-  padding-left: 1.5rem;
-  margin-bottom: 1rem;
-}
-.tiptap-content li {
-  margin-bottom: 0.5rem;
-}
-
-/* Жирный и курсив */
-.tiptap-content strong {
-  font-weight: bold;
-}
-.tiptap-content em {
-  font-style: italic;
-}
-.tiptap-content u {
-  text-decoration: underline;
-}
-
-/* Прочее */
+.tiptap-content h6 { font-size: 1.1rem; font-weight: 600; margin: 0.8rem 0 0.5rem; }
+.tiptap-content p { margin-bottom: 0.75rem; }
+.tiptap-content p:last-child { margin-bottom: 0; }
+.tiptap-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+.tiptap-content ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+.tiptap-content li { margin-bottom: 0.25rem; }
+.tiptap-content strong { font-weight: 700; }
+.tiptap-content em { font-style: italic; }
+.tiptap-content u { text-decoration: underline; }
 .tiptap-content blockquote {
-  border-left: 4px solid #d1d5db; /* gray-300 */
+  border-left: 3px solid #cbd5e1;
   padding-left: 1rem;
-  color: #6b7280; /* gray-600 */
+  color: #64748b;
   font-style: italic;
   margin: 1rem 0;
 }
+.tiptap-content hr { border: none; border-top: 1px solid #e2e8f0; margin: 1.5rem 0; }
 
-.tiptap-content hr {
-  border: none;
-  border-top: 1px solid #e5e7eb; /* gray-200 */
-  margin: 2rem 0;
-}
-
-/* 🔒 Принудительно светлая тема для Tiptap */
 .ProseMirror {
-  background-color: #ffffff !important;
-  color: #171717 !important;
+  min-height: 220px;
+  outline: none;
 }
-
-.ProseMirror * {
-  color: #171717 !important;
-}
-
 .ProseMirror p.is-editor-empty:first-child::before {
-  color: #999999 !important;
-}
-
-.ProseMirror ::selection {
-  background: rgba(0, 100, 255, 0.2) !important;
-}
-
-.tab-content{
-  background-color: white;
-}
-.tab{
-  background-color: white;
-  color: black;
+  content: attr(data-placeholder);
+  color: #94a3b8;
+  float: left;
+  height: 0;
+  pointer-events: none;
 }

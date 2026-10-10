@@ -1,161 +1,35 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
-import {useRouter} from 'next/navigation';
-import Sidebar from '@/Components/Sidebar';
-import TokenTimer from '@/Components/TokenTimer';
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import AdminShell, { PageHeader } from '@/Components/AdminShell';
+import { api } from '@/lib/http';
+import SlideForm, { SlideValues } from '../SlideForm';
 
 const AddSlider = () => {
-    const [isClient, setIsClient] = useState(false);
-    const [image, setImage] = useState<File | null>(null);
-    const [text, setText] = useState('');
-    const [title, setTitle] = useState('');
-    const [link, setLink] = useState('');
-    const [linkText, setLinkText] = useState('');
-
-
     const router = useRouter();
 
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        const token = localStorage.getItem('auth_token');
-        if (!token) {
-            console.error('Нет токена. Пользователь не авторизован.');
-            return;
-        }
-
+    const handleSubmit = async (values: SlideValues, image: File | null) => {
         const formData = new FormData();
         if (image) formData.append('image', image);
-        formData.append('title', title ?? '');
-        formData.append('text', text ?? '');
-        formData.append('link', link ?? '');
-        formData.append('link_text', linkText ?? '');
-
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sliders`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                body: formData,
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log('добавлен!', data);
-                setImage(null);
-                setTitle('');
-                setText('');
-                setLink('')
-                setLinkText('');
-                router.push('/admin/sliders');
-            } else {
-                const errorText = await response.text();
-                console.error('Ошибка при добавлении:', errorText);
-            }
-        } catch (error) {
-            console.error('Ошибка запроса', error);
-        }
+        formData.append('title', values.title);
+        formData.append('text', values.text);
+        formData.append('link', values.link);
+        formData.append('link_text', values.link_text);
+        await api('/api/sliders', { method: 'POST', form: formData });
+        router.push('/admin/sliders');
     };
 
-
     return (
-        <div className="container mx-auto">
-            <div className="flex bg-gray-200">
-                <Sidebar/>
-                <div className="flex-1 p-10 ml-62">
-                    <TokenTimer/>
-                    <div className="mt-8">
-                        <form
-                            onSubmit={handleSubmit}
-                            className="w-full mx-auto p-6 border border-gray-300 rounded-lg shadow-lg bg-white"
-                        >
-                            <h2 className="text-2xl font-bold mb-4 text-left">Add new slider</h2>
-
-                            <div className="mb-4 flex space-x-4">
-                                <div className="w-full">
-                                    <label htmlFor="image" className="block text-gray-700 font-semibold mb-2">
-                                        Image:
-                                    </label>
-                                    <input
-                                        type="file"
-                                        id="image"
-                                        accept="image/*"
-                                        onChange={(e) => {
-                                            if (e.target.files && e.target.files[0]) {
-                                                setImage(e.target.files[0]);
-                                            }
-                                        }}
-                                        required
-                                        className="border border-gray-300 rounded p-2 w-full focus:border-blue-500 focus:ring focus:ring-blue-200 transition duration-150"
-                                    />
-                                </div>
-                            </div>
-
-                            {isClient && (
-                                <>
-                                    <div className="mb-4">
-                                        <label className="block text-gray-700 font-semibold mb-2">Title:</label>
-                                        <input
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
-                                            type="text"
-                                            required
-                                            className="border border-gray-300 rounded p-2 w-full"
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label
-                                            className="block text-gray-700 font-semibold mb-2">Text:</label>
-                                        <textarea
-                                            value={text}
-                                            onChange={(e) => setText(e.target.value)}
-                                            rows={2}
-                                            required
-                                            className="border border-gray-300 rounded p-2 w-full"
-                                        ></textarea>
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-gray-700 font-semibold mb-2">Link:</label>
-                                        <input
-                                            value={link}
-                                            onChange={(e) => setLink(e.target.value)}
-                                            type="text"
-                                            required
-                                            className="border border-gray-300 rounded p-2 w-full"
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-gray-700 font-semibold mb-2">Link text:</label>
-                                        <input
-                                            value={linkText}
-                                            onChange={(e) => setLinkText(e.target.value)}
-                                            type="text"
-                                            required
-                                            className="border border-gray-300 rounded p-2 w-full"
-                                        />
-                                    </div>
-                                </>
-                            )}
-
-                            <button
-                                type="submit"
-                                className="w-full bg hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150"
-                            >
-                                Add slider
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
+        <AdminShell>
+            <PageHeader title="Add slide" back={{ href: '/admin/sliders', label: 'Hero slides' }} />
+            <SlideForm
+                initial={{ title: '', text: '', link: '', link_text: '' }}
+                submitLabel="Add slide"
+                cancelHref="/admin/sliders"
+                onSubmit={handleSubmit}
+            />
+        </AdminShell>
     );
 };
 

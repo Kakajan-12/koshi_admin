@@ -1,99 +1,67 @@
 'use client';
-import React, {FormEvent, useEffect, useState} from 'react';
+
+import React, { FormEvent, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import axios from 'axios';
-import Sidebar from "@/Components/Sidebar";
-import TokenTimer from "@/Components/TokenTimer";
-import { DocumentIcon } from "@heroicons/react/16/solid";
+import AdminShell, { PageHeader } from '@/Components/AdminShell';
+import Button from '@/Components/ui/Button';
+import { Card, CardBody } from '@/Components/ui/Card';
+import { Alert, Field, FormActions, Input } from '@/Components/ui/Form';
+import { ErrorState, LoadingState } from '@/Components/ui/Feedback';
+import { api, errorMessage } from '@/lib/http';
+import { useRecord } from '@/lib/useRecord';
+
+type Allergen = { id: number; name: string };
 
 const EditAllergens = () => {
     const { id } = useParams();
     const router = useRouter();
-    const [data, setData] = useState({ name: ''});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const token = localStorage.getItem('auth_token');
-                const response = await axios.get(
-                    `${process.env.NEXT_PUBLIC_API_URL}/api/allergens/${id}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                setData(response.data); // ✅ сразу объект
-                setLoading(false);
-            } catch (err) {
-                console.error('Ошибка при загрузке данных:', err);
-                setError('Ошибка при загрузке');
-                setLoading(false);
-            }
-        };
-
-        if (id) fetchData();
-    }, [id]);
-
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setData((prev) => ({ ...prev, [name]: value }));
-    };
+    const { data, setData, loading, error } = useRecord<Allergen>(id ? `/api/allergens/${id}` : null);
+    const [saving, setSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        if (!data) return;
+        setSaving(true);
+        setSaveError(null);
         try {
-            const token = localStorage.getItem('auth_token');
-            await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/allergens/${id}`, {
-                name: data.name,
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            await api(`/api/allergens/${id}`, { method: 'PUT', json: { name: data.name } });
             router.push('/admin/allergens');
         } catch (err) {
-            console.error('Ошибка при сохранении:', err);
-            setError('Ошибка при сохранении');
+            setSaveError(errorMessage(err, 'Could not save changes'));
+            setSaving(false);
         }
     };
 
-    if (loading) return <p>Загрузка...</p>;
-    if (error) return <p>{error}</p>;
-
     return (
-        <div className="container mx-auto">
-            <div className="flex bg-gray-200 min-h-screen">
-                <Sidebar/>
-                <div className="flex-1 p-10 ml-62">
-                    <TokenTimer/>
-                    <div className="mt-8">
-                        <h1 className="text-2xl font-bold mb-4">Edit Allergens</h1>
-                        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded shadow">
-                            <div className="mb-4">
-                                <label className="block text-gray-700 font-semibold mb-2">Allergens:</label>
-                                <input
-                                    name="name"
+        <AdminShell>
+            <PageHeader title="Edit allergen" back={{ href: '/admin/allergens', label: 'Allergens' }} />
+            <Card className="max-w-2xl">
+                {loading ? (
+                    <LoadingState rows={2} />
+                ) : error || !data ? (
+                    <ErrorState message={error ?? 'Allergen not found'} />
+                ) : (
+                    <form onSubmit={handleSubmit}>
+                        <CardBody className="space-y-5">
+                            {saveError && <Alert>{saveError}</Alert>}
+                            <Field label="Name" htmlFor="name" required>
+                                <Input
+                                    id="name"
                                     value={data.name}
-                                    onChange={handleChange}
-                                    type="text"
+                                    onChange={(e) => setData({ ...data, name: e.target.value })}
                                     required
-                                    className="border border-gray-300 rounded p-2 w-full"
                                 />
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="bg text-white px-4 py-2 rounded flex items-center hover:bg-blue-700"
-                            >
-                                <DocumentIcon className="size-5 mr-2"/>
-                                Save
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+                            </Field>
+                        </CardBody>
+                        <FormActions>
+                            <Button variant="secondary" href="/admin/allergens">Cancel</Button>
+                            <Button type="submit" loading={saving}>Save changes</Button>
+                        </FormActions>
+                    </form>
+                )}
+            </Card>
+        </AdminShell>
     );
 };
 

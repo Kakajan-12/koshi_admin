@@ -1,176 +1,93 @@
-'use client'
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import axios, { AxiosError } from "axios";
-import Sidebar from "@/Components/Sidebar";
-import TokenTimer from "@/Components/TokenTimer";
-import Link from "next/link";
-import {PencilIcon, PlusCircleIcon, TrashIcon} from "@heroicons/react/16/solid";
+'use client';
 
-type DataItem = {
-    id: string;
+import { PencilSquareIcon, PlusIcon, TrashIcon } from "@heroicons/react/20/solid";
+import AdminShell, { PageHeader } from "@/Components/AdminShell";
+import Button from "@/Components/ui/Button";
+import { Card } from "@/Components/ui/Card";
+import { Alert } from "@/Components/ui/Form";
+import { ConfirmDialog, EmptyState, ErrorState, LoadingState } from "@/Components/ui/Feedback";
+import { RowActions, Table, TBody, TD, TH, THead, TR } from "@/Components/ui/Table";
+import { useList } from "@/lib/useList";
+
+type ProductType = {
+    id: number;
     type_name: string;
 };
 
 const ProductTypes = () => {
-    const [types, setTypes] = useState<DataItem[]>([]);
-    const [isDeleting, setIsDeleting] = useState<boolean>(false);
-    const [showModal, setShowModal] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
-    const [selectedDataId, setSelectedDataId] = useState<string | null>(null);
-    const router = useRouter();
-
-    useEffect(() => {
-        const fetchTypes = async () => {
-            try {
-                const token = localStorage.getItem('auth_token');
-                if (!token) {
-                    router.push('/');
-                    return;
-                }
-
-                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/product-types`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                setTypes(response.data);
-            } catch (err) {
-                const axiosError = err as AxiosError;
-                console.error(axiosError);
-                setError("Ошибка при получении данных");
-
-                if (axios.isAxiosError(axiosError) && axiosError.response?.status === 401) {
-                    router.push("/");
-                }
-            }
-        };
-
-        fetchTypes();
-    }, [router]);
-
-    const handleDelete = async () => {
-        if (!selectedDataId) return;
-        setIsDeleting(true);
-        try {
-            const token = localStorage.getItem('auth_token');
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/product-types/${selectedDataId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            setTypes(prev => prev.filter(p => p.id !== selectedDataId));
-            setIsDeleting(false);
-            setShowModal(false);
-            setSelectedDataId(null);
-        } catch (err) {
-            console.error("Ошибка при удалении:", err);
-            setIsDeleting(false);
-            setShowModal(false);
-        }
-    };
-
-    if (error) {
-        return <div>{error}</div>;
-    }
+    const list = useList<ProductType>("/api/product-types");
 
     return (
-        <div className="container mx-auto">
-            <div className="flex bg-gray-200">
-                <Sidebar/>
-                <div className="flex-1 p-10 ml-62">
-                    <TokenTimer/>
-                    <div className="mt-8">
-                        <div className="w-full flex justify-between">
-                            <h2 className="text-2xl font-bold mb-4">Product Types</h2>
-                            <Link href="/admin/product-types/add-product-type"
-                                  className="bg text-white h-fit py-2 px-8 rounded-md cursor-pointer flex items-center">
-                                <PlusCircleIcon className="size-6" color="#ffffff"/>
-                                <div className="ml-2">Add</div>
-                            </Link>
-                        </div>
-                        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                            <thead>
-                            <tr className="divide-x-1 divide-gray-200">
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Types</th>
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-center text-gray-600">Edit</th>
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-center text-gray-600">Delete</th>
-                            </tr>
-                            </thead>
-                            <tbody className="divide-y-1 divide-gray-200">
-                            {types.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="text-center py-4">No data available</td>
-                                </tr>
-                            ) : (
-                                types.map((type) => (
-                                    <tr key={type.id} className="divide-x-1 divide-gray-200">
-                                        <td className="py-4 px-4">
-                                            <div>{type.type_name}</div>
-                                        </td>
-                                        <td className="py-4 px-4 flex justify-center">
-                                            <Link
-                                                href={`/admin/product-types/edit-product-type/${type.id}`}
-                                                className="flex items-center text-white border-2 border-bg rounded-md bg w-fit px-4 py-1 cursor-pointer"
+        <AdminShell>
+            <PageHeader
+                title="Product types"
+                description="Types used to filter products in the menu."
+                actions={
+                    <Button href="/admin/product-types/add-product-type" icon={<PlusIcon className="size-4" />}>
+                        Add type
+                    </Button>
+                }
+            />
+
+            {list.deleteError && <div className="mb-4"><Alert>{list.deleteError}</Alert></div>}
+
+            <Card>
+                {list.loading ? (
+                    <LoadingState />
+                ) : list.error ? (
+                    <ErrorState message={list.error} onRetry={list.reload} />
+                ) : list.items.length === 0 ? (
+                    <EmptyState
+                        title="No product types yet"
+                        description="Add types to show them on product pages."
+                        action={<Button href="/admin/product-types/add-product-type" size="sm">Add type</Button>}
+                    />
+                ) : (
+                    <Table>
+                        <THead>
+                            <TH>Name</TH>
+                            <TH align="right"><span className="sr-only">Actions</span></TH>
+                        </THead>
+                        <TBody>
+                            {list.items.map((item) => (
+                                <TR key={item.id}>
+                                    <TD className="font-medium text-slate-900">{item.type_name}</TD>
+                                    <TD align="right">
+                                        <RowActions>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                href={`/admin/product-types/edit-product-type/${item.id}`}
+                                                icon={<PencilSquareIcon className="size-4" />}
                                             >
-                                                <PencilIcon className="w-5 h-5 mr-2"/>
                                                 Edit
-                                            </Link>
-                                        </td>
-                                        <td className="py-4 px-4">
-                                            <div className="w-full flex justify-center">
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedDataId(type.id);
-                                                        setShowModal(true);
-                                                    }}
-                                                    className="flex items-center text-white flex justify-center rounded-md w-fit bg-red-600 px-4 py-1 cursor-pointer"
-                                                >
-                                                    <TrashIcon className="w-5 h-5 mr-2"/>
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                            </tbody>
-                        </table>
-                    </div>
-                    {showModal && (
-                        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 z-50">
-                            <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
-                                <h2 className="text-xl font-semibold mb-4">Remove content</h2>
-                                <p className="mb-6">Are u sure?</p>
-                                <div className="flex justify-end space-x-4">
-                                    <button
-                                        className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
-                                        onClick={() => {
-                                            setShowModal(false);
-                                            setSelectedDataId(null);
-                                        }}
-                                        disabled={isDeleting}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
-                                        onClick={handleDelete}
-                                        disabled={isDeleting}
-                                    >
-                                        {isDeleting ? 'Deleting...' : 'Delete'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+                                            </Button>
+                                            <Button
+                                                variant="ghostDanger"
+                                                size="sm"
+                                                onClick={() => list.askDelete(item)}
+                                                icon={<TrashIcon className="size-4" />}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </RowActions>
+                                    </TD>
+                                </TR>
+                            ))}
+                        </TBody>
+                    </Table>
+                )}
+            </Card>
 
-
+            <ConfirmDialog
+                open={!!list.pendingDelete}
+                title="Delete product type?"
+                description={`“${list.pendingDelete?.type_name}” will be deleted. Products of this type must be updated.`}
+                loading={list.deleting}
+                onConfirm={list.confirmDelete}
+                onCancel={list.cancelDelete}
+            />
+        </AdminShell>
     );
 };
 

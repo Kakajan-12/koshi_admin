@@ -1,86 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Sidebar from '@/Components/Sidebar';
-import TokenTimer from '@/Components/TokenTimer';
+import AdminShell, { PageHeader } from '@/Components/AdminShell';
+import Button from '@/Components/ui/Button';
+import { Card, CardBody } from '@/Components/ui/Card';
+import { Alert, Field, FormActions, Input } from '@/Components/ui/Form';
+import { api, errorMessage } from '@/lib/http';
 
 const AddAllergens = () => {
-    const [name, setName] = useState('');
     const router = useRouter();
+    const [name, setName] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        const token = localStorage.getItem('auth_token');
-        if (!token) {
-            console.error('Нет токена. Пользователь не авторизован.');
-            return;
-        }
-
-        const payload = {
-            name
-        };
-
+        setSaving(true);
+        setError(null);
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/allergens`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Content added!', data);
-                setName('');
-                router.push('/admin/allergens');
-            } else {
-                const errorText = await response.text();
-                console.error('Ошибка при добавлении:', errorText);
-            }
-        } catch (error) {
-            console.error('Ошибка запроса', error);
+            await api('/api/allergens', { method: 'POST', json: { name } });
+            router.push('/admin/allergens');
+        } catch (err) {
+            setError(errorMessage(err, 'Could not add allergen'));
+            setSaving(false);
         }
     };
 
     return (
-        <div className="container mx-auto">
-            <div className="flex bg-gray-200">
-                <Sidebar/>
-                <div className="flex-1 p-10 ml-62">
-                    <TokenTimer/>
-                    <div className="mt-8">
-                        <form
-                            onSubmit={handleSubmit}
-                            className="w-full mx-auto p-6 border border-gray-300 rounded-lg shadow-lg bg-white"
-                        >
-                            <h2 className="text-2xl font-bold mb-4">Add Allergens</h2>
-
-                            <div className="mb-4">
-                                <label className="block text-gray-700 font-semibold mb-2">Content:</label>
-                                <input
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    type="text"
-                                    required
-                                    className="border border-gray-300 rounded p-2 w-full"
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full bg hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                            >
-                                Add allergens
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <AdminShell>
+            <PageHeader title="Add allergen" back={{ href: '/admin/allergens', label: 'Allergens' }} />
+            <Card className="max-w-2xl">
+                <form onSubmit={handleSubmit}>
+                    <CardBody className="space-y-5">
+                        {error && <Alert>{error}</Alert>}
+                        <Field label="Name" htmlFor="name" required hint="For example: Nuts, Gluten, Milk">
+                            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required autoFocus />
+                        </Field>
+                    </CardBody>
+                    <FormActions>
+                        <Button variant="secondary" href="/admin/allergens">Cancel</Button>
+                        <Button type="submit" loading={saving}>Add allergen</Button>
+                    </FormActions>
+                </form>
+            </Card>
+        </AdminShell>
     );
 };
 

@@ -1,208 +1,214 @@
 "use client";
 
-import Sidebar from "@/Components/Sidebar";
-import TokenTimer from "@/Components/TokenTimer";
-import Link from "next/link";
-import { EyeIcon } from "@heroicons/react/16/solid";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import AdminShell, { PageHeader } from "@/Components/AdminShell";
+import { Card } from "@/Components/ui/Card";
+import { Input } from "@/Components/ui/Form";
+import { Badge, EmptyState, ErrorState, LoadingState } from "@/Components/ui/Feedback";
+import Pagination from "@/Components/ui/Pagination";
+import { Table, TBody, TD, TH, THead, TR } from "@/Components/ui/Table";
+import { formatDateTime, formatMoney } from "@/lib/api";
+import { api, errorMessage } from "@/lib/http";
+import { customerOf, daysUntilReady, Order, orderData, orderTypeLabel, readyLabel, statusLabel, statusTone } from "./orderUtils";
 
-// Обновленный интерфейс
-interface Order {
-    id: number;
-    user_id: number | null;
-    email: string | null;        // для зарегистрированных
-    name: string;
+const PAGE_SIZE = 20;
+
+const FILTERS = [
+    { value: "", label: "All", countKey: "all" },
+    { value: "paid", label: "Paid", countKey: "paid" },
+    { value: "pending", label: "Awaiting payment", countKey: "pending" },
+    { value: "failed", label: "Failed", countKey: "failed" },
+] as const;
+
+type OrdersPage = {
+    items: Order[];
     total: number;
-    status: string;
-    createdAt: string;
-    order_data: Record<string, unknown>;
-    // Добавляем поля для гостей
-    is_guest?: boolean;
-    guest_name?: string | null;
-    guest_email?: string | null;
-    guest_phone?: string | null;
-    guest_address?: string | null;
-}
+    page: number;
+    limit: number;
+    pages: number;
+    counts: { all: number; paid: number; pending: number; failed: number };
+};
 
-const Orders = () => {
-    const [orders, setOrders] = useState<Order[]>([]);
+function OrdersList() {
+    const router = useRouter();
+    const pathname = usePathname();
+    const params = useSearchParams();
+
+    // Страница, фильтр и поиск живут в адресе — «назад» из заказа возвращает туда же
+    const page = Math.max(1, Number(params.get("page")) || 1);
+    const status = params.get("status") ?? "";
+    const q = params.get("q") ?? "";
+
+    const [search, setSearch] = useState(q);
+    const [data, setData] = useState<OrdersPage | null>(null);
     const [loading, setLoading] = useState(true);
-    const [validToken, setValidToken] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const setQuery = useCallback(
+        (next: { page?: number; status?: string; q?: string }) => {
+            const sp = new URLSearchParams(params.toString());
+            for (const [key, value] of Object.entries(next)) {
+                if (value === undefined) continue;
+                if (value === "" || (key === "page" && value === 1)) sp.delete(key);
+                else sp.set(key, String(value));
+            }
+            const qs = sp.toString();
+            router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+        },
+        [params, pathname, router]
+    );
+
+    // Поиск с задержкой, чтобы не дёргать сервер на каждую букву; новый поиск — с первой страницы
     useEffect(() => {
-        const fetchOrders = async () => {
-            const token = localStorage.getItem("auth_token");
-            if (!token) {
-                setValidToken(false);
-                setLoading(false);
-                return;
-            }
+        if (search === q) return;
+        const timer = setTimeout(() => setQuery({ q: search.trim(), page: 1 }), 350);
+        return () => clearTimeout(timer);
+    }, [search, q, setQuery]);
 
-            try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/orders`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-
-                if (res.status === 401) {
-                    setValidToken(false);
-                    setLoading(false);
-                    return;
-                }
-
-                const data = await res.json();
-                console.log("📍 Orders data:", data);
-
-                setOrders(Array.isArray(data) ? data : []);
-                setValidToken(true);
-            } catch (err: unknown) {
-                if (err instanceof Error) {
-                    console.error("Fetch error:", err.message);
-                    setError(err.message);
-                } else {
-                    console.error("Fetch error:", err);
-                    setError("Failed to load orders");
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchOrders();
-    }, []);
-
-    const formatDate = (dateString: string) => {
-        if (!dateString) return "N/A";
-
+    const load = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        const sp = new URLSearchParams({ page: String(page), limit: String(PAGE_SIZE) });
+        if (status) sp.set("status", status);
+        if (q) sp.set("q", q);
         try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return "Invalid Date";
-
-            return date.toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-        } catch {
-            return "Invalid Date";
+            const res = await api<OrdersPage>(`/api/admin/orders?${sp}`);
+            setData(res);
+            // Страница исчезла (например, заказов стало меньше) — переходим на последнюю
+            if (res.items.length === 0 && res.total > 0 && page > res.pages) setQuery({ page: res.pages });
+        } catch (err) {
+            setError(errorMessage(err, "Could not load orders"));
+        } finally {
+            setLoading(false);
         }
-    };
+    }, [page, status, q, setQuery]);
 
-    // Функция для получения email в зависимости от типа заказа
-    const getCustomerEmail = (order: Order): string => {
-        if (order.is_guest) {
-            return order.guest_email || 'No email provided';
-        }
-        return order.email || 'N/A';
-    };
+    useEffect(() => {
+        load();
+    }, [load]);
 
-    // Функция для получения имени с учетом типа заказа
-    const getCustomerName = (order: Order): string => {
-        if (order.is_guest) {
-            return order.guest_name || 'Guest';
-        }
-        return order.name || 'Customer';
-    };
-
-    if (loading) {
-        return <div className="p-10 text-lg">Loading...</div>;
-    }
-
-    if (!validToken) {
-        return (
-            <div className="p-10 text-lg text-red-600">
-                Access denied. Invalid or missing token.
-            </div>
-        );
-    }
+    const counts = data?.counts;
+    const hasAnyOrders = !!counts && counts.all > 0;
 
     return (
-        <div className="container mx-auto">
-            <div className="flex bg-gray-200">
-                <Sidebar/>
-                <div className="flex-1 p-10 ml-62">
-                    <TokenTimer/>
-                    <div className="mt-8">
-                        <h2 className="text-2xl font-bold mb-6">Customer Orders</h2>
+        <>
+            <PageHeader title="Orders" description="Online orders paid through Stripe." />
 
-                        {error && (
-                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                                {error}
-                            </div>
-                        )}
-
-                        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                            <thead>
-                            <tr>
-                                <th className="py-2 px-4 border-b-2 text-left text-gray-600">ID</th>
-                                <th className="py-2 px-4 border-b-2 text-left text-gray-600">Customer</th>
-                                <th className="py-2 px-4 border-b-2 text-left text-gray-600">Email</th>
-                                <th className="py-2 px-4 border-b-2 text-left text-gray-600">Total</th>
-                                <th className="py-2 px-4 border-b-2 text-left text-gray-600">Payment</th>
-                                <th className="py-2 px-4 border-b-2 text-left text-gray-600">Date</th>
-                                <th className="py-2 px-4 border-b-2 text-center text-gray-600">View</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {orders.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="text-center py-4">
-                                        No orders found
-                                    </td>
-                                </tr>
-                            ) : (
-                                orders.map((order) => (
-                                    <tr key={order.id} className="border-b hover:bg-gray-50">
-                                        <td className="py-3 px-4 font-medium">#{order.id}</td>
-                                        <td className="py-3 px-4">
-                                            <div className="flex items-center">
-                                                {getCustomerName(order)}
-                                                {order.is_guest && (
-                                                    <span className="ml-2 px-2 py-0.5 text-xs bg-purple-100 text-purple-800 rounded-full">
-                                                        Guest
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="py-3 px-4">
-                                            {getCustomerEmail(order)}
-                                        </td>
-                                        <td className="py-3 px-4 font-medium">£{Number(order.total).toFixed(2)}</td>
-                                        <td className="py-3 px-4">
-                                            <span
-                                                className={`px-3 py-1 rounded-full text-white text-sm font-medium ${
-                                                    order.status?.toLowerCase() === "paid"
-                                                        ? "bg-green-600"
-                                                        : order.status?.toLowerCase() === "pending"
-                                                            ? "bg-yellow-500"
-                                                            : "bg-gray-500"
-                                                }`}
-                                            >
-                                                {order.status || "Unknown"}
-                                            </span>
-                                        </td>
-                                        <td className="py-3 px-4 text-gray-600">{formatDate(order.createdAt)}</td>
-                                        <td className="py-3 px-4 text-center">
-                                            <Link
-                                                href={`/admin/orders/view-orders/${order.id}`}
-                                                className="bg-green-700 text-white py-2 px-4 rounded-md inline-flex items-center hover:bg-green-800 transition-colors"
-                                            >
-                                                <EyeIcon className="h-5 w-5 mr-1"/>
-                                                View
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                            </tbody>
-                        </table>
+            <Card>
+                <div className="flex flex-col gap-3 border-b border-slate-100 p-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex flex-wrap gap-1" role="tablist" aria-label="Filter by payment status">
+                        {FILTERS.map((f) => (
+                            <button
+                                key={f.value}
+                                type="button"
+                                role="tab"
+                                aria-selected={status === f.value}
+                                onClick={() => setQuery({ status: f.value, page: 1 })}
+                                className={`cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                                    status === f.value ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+                                }`}
+                            >
+                                {f.label}
+                                {counts && (
+                                    <span className={`ml-1.5 text-xs ${status === f.value ? "text-white/70" : "text-slate-400"}`}>
+                                        {counts[f.countKey]}
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="relative lg:w-72">
+                        <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                        <Input
+                            placeholder="Search by name, email, phone or #"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="pl-9"
+                            aria-label="Search orders"
+                        />
                     </div>
                 </div>
-            </div>
-        </div>
+
+                {loading && !data ? (
+                    <LoadingState rows={8} />
+                ) : error ? (
+                    <ErrorState message={error} onRetry={load} />
+                ) : !data || data.items.length === 0 ? (
+                    hasAnyOrders || q ? (
+                        <EmptyState title="Nothing found" description="Try another search or status." />
+                    ) : (
+                        <EmptyState title="No orders yet" description="Orders appear here after customers check out." />
+                    )
+                ) : (
+                    <div className={loading ? "opacity-60 transition-opacity" : "transition-opacity"} aria-busy={loading}>
+                        <Table>
+                            <THead>
+                                <TH>Order</TH>
+                                <TH>Customer</TH>
+                                <TH className="hidden md:table-cell">Type · ready by</TH>
+                                <TH>Status</TH>
+                                <TH align="right">Total</TH>
+                            </THead>
+                            <TBody>
+                                {data.items.map((order) => {
+                                    const c = customerOf(order);
+                                    return (
+                                        <TR key={order.id} onClick={() => router.push(`/admin/orders/view-orders/${order.id}`)}>
+                                            <TD>
+                                                <p className="flex items-center gap-2 font-medium text-slate-900">
+                                                    #{order.id}
+                                                    {order.is_new && <Badge tone="brand">New</Badge>}
+                                                </p>
+                                                <p className="text-xs text-slate-500">{formatDateTime(order.createdAt)}</p>
+                                            </TD>
+                                            <TD>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium text-slate-900">{c.name}</span>
+                                                    {order.is_guest && <Badge tone="blue">Guest</Badge>}
+                                                </div>
+                                                <p className="text-xs text-slate-500">{c.email ?? "No email"}</p>
+                                            </TD>
+                                            <TD className="hidden md:table-cell">
+                                                <p>{orderTypeLabel(orderData(order).orderType)}</p>
+                                                {readyLabel(orderData(order)) && (
+                                                    <p className={`text-xs ${daysUntilReady(orderData(order)) !== null && daysUntilReady(orderData(order))! <= 1 ? "font-semibold text-amber-700" : "text-slate-500"}`}>
+                                                        {readyLabel(orderData(order))}
+                                                    </p>
+                                                )}
+                                            </TD>
+                                            <TD><Badge tone={statusTone(order.status)}>{statusLabel(order.status)}</Badge></TD>
+                                            <TD align="right" className="font-medium text-slate-900">{formatMoney(order.total)}</TD>
+                                        </TR>
+                                    );
+                                })}
+                            </TBody>
+                        </Table>
+                        <Pagination
+                            page={data.page}
+                            pages={data.pages}
+                            total={data.total}
+                            limit={data.limit}
+                            onChange={(p) => {
+                                setQuery({ page: p });
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                            }}
+                        />
+                    </div>
+                )}
+            </Card>
+        </>
     );
-};
+}
+
+// useSearchParams требует Suspense при сборке страницы
+const Orders = () => (
+    <AdminShell>
+        <Suspense fallback={<Card><LoadingState rows={8} /></Card>}>
+            <OrdersList />
+        </Suspense>
+    </AdminShell>
+);
 
 export default Orders;

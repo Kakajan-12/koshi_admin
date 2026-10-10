@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: 'Koshi Bakery Admin Panel',
+    title: 'Koşi Bakery Admin',
 };
 
 export default function RootLayout({

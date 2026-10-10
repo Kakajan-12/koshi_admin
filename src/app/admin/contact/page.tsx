@@ -1,118 +1,73 @@
-'use client'
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import axios, { AxiosError } from "axios";
-import Sidebar from "@/Components/Sidebar";
-import TokenTimer from "@/Components/TokenTimer";
-import Link from "next/link";
-import {PencilIcon} from "@heroicons/react/16/solid";
+'use client';
+import React from "react";
 
-interface Address {
-    id: string;
-    address: number;
+import { EnvelopeIcon, MapPinIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import { PencilSquareIcon } from "@heroicons/react/20/solid";
+import AdminShell, { PageHeader } from "@/Components/AdminShell";
+import Button from "@/Components/ui/Button";
+import { Card } from "@/Components/ui/Card";
+import { EmptyState, ErrorState, LoadingState } from "@/Components/ui/Feedback";
+import { useList } from "@/lib/useList";
+import MapPreview from "@/Components/MapPreview";
+
+type ContactData = {
+    id: number;
+    address: string;
     phone: string;
     mail: string;
     map: string;
+};
+
+function ContactLine({ icon: Icon, children }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode }) {
+    return (
+        <div className="flex gap-3">
+            <Icon className="mt-0.5 size-5 shrink-0 text-slate-400" />
+            <span className="text-sm text-slate-700">{children || <span className="text-slate-400">Not set</span>}</span>
+        </div>
+    );
 }
 
 const Contact = () => {
-    const [addresses, setAddresses] = useState<Address[]>([]);
-    const [error, setError] = useState<string | null>(null);
-    const router = useRouter();
+    const list = useList<ContactData>("/api/contact");
 
-    useEffect(() => {
-        const fetchServices = async () => {
-            try {
-                const token = localStorage.getItem('auth_token');
-                if (!token) {
-                    router.push('/');
-                    return;
-                }
-
-                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/contact`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                setAddresses(response.data);
-            } catch (err) {
-                const axiosError = err as AxiosError;
-                console.error(axiosError);
-                setError('Ошибка при получении данных');
-
-                if (axios.isAxiosError(axiosError) && axiosError.response?.status === 401) {
-                    router.push('/');
-                }
-            }
-        };
-
-        fetchServices();
-    }, [router]);
-
-    if (error) {
-        return <div>{error}</div>;
-    }
     return (
-        <div className="container mx-auto">
-            <div className="flex bg-gray-200">
-                <Sidebar/>
-                <div className="flex-1 p-10 ml-62">
-                    <TokenTimer/>
-                    <div className="mt-8">
-                        <div className="w-full flex justify-between">
-                            <h2 className="text-2xl font-bold mb-4">Contacts</h2>
-                        </div>
-                        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                            <thead>
-                            <tr className="divide-x-1 divide-gray-200">
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Map</th>
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Address</th>
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Phone</th>
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Mail</th>
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-center text-gray-600">Edit</th>
-                            </tr>
-                            </thead>
-                            <tbody className="divide-y-1 divide-gray-200">
-                            {addresses.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="text-center py-4">No contacts available</td>
-                                </tr>
-                            ) : (
-                                addresses.map((address) => (
-                                    <tr key={address.id} className="divide-x-1 divide-gray-200">
-                                        <td className="py-4 px-4">
-                                            <div dangerouslySetInnerHTML={{__html: address.map}}/>
-                                        </td>
-                                        <td className="py-4 px-4">
-                                            <div>{address.address}</div>
-                                        </td>
-                                        <td className="py-4 px-4">
-                                            <div>{address.phone}</div>
-                                        </td>
-                                        <td className="py-4 px-4">
-                                            <div>{address.mail}</div>
-                                        </td>
-                                        <td className="py-4 px-4 flex justify-center">
-                                            <Link
-                                                href={`/admin/contact/edit-contact/${address.id}`}
-                                                className="flex items-center text-white border-2 border-bg rounded-md bg w-fit px-4 py-1 cursor-pointer"
-                                            >
-                                                <PencilIcon className="w-5 h-5 mr-2"/>
-                                                Edit
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                            </tbody>
-                        </table>
-                    </div>
+        <AdminShell>
+            <PageHeader title="Contact details" description="Address, phone, email and map shown on the website." />
+
+            {list.loading ? (
+                <Card><LoadingState rows={3} /></Card>
+            ) : list.error ? (
+                <Card><ErrorState message={list.error} onRetry={list.reload} /></Card>
+            ) : list.items.length === 0 ? (
+                <Card><EmptyState title="No contact details" description="Contact details are missing in the database." /></Card>
+            ) : (
+                <div className="space-y-6">
+                    {list.items.map((contact) => (
+                        <Card key={contact.id} className="overflow-hidden">
+                            <div className="grid lg:grid-cols-5">
+                                <div className="space-y-4 p-6 lg:col-span-2">
+                                    <ContactLine icon={MapPinIcon}>{contact.address}</ContactLine>
+                                    <ContactLine icon={PhoneIcon}>{contact.phone}</ContactLine>
+                                    <ContactLine icon={EnvelopeIcon}>{contact.mail}</ContactLine>
+                                    <div className="pt-2">
+                                        <Button
+                                            variant="secondary"
+                                            href={`/admin/contact/edit-contact/${contact.id}`}
+                                            icon={<PencilSquareIcon className="size-4" />}
+                                        >
+                                            Edit details
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="h-64 border-t border-slate-200 bg-slate-50 lg:col-span-3 lg:h-auto lg:min-h-72 lg:border-t-0 lg:border-l [&_iframe]:h-full [&_iframe]:w-full">
+                                    <MapPreview html={contact.map} />
+                                </div>
+                            </div>
+                        </Card>
+                    ))}
                 </div>
-            </div>
-        </div>
-
-
+            )}
+        </AdminShell>
     );
 };
 

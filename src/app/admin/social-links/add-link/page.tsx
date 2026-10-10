@@ -1,79 +1,27 @@
 'use client';
 
-import React, { useState} from 'react';
-import { TextField, Button, MenuItem } from '@mui/material';
+import React from 'react';
 import { useRouter } from 'next/navigation';
-import Sidebar from '@/Components/Sidebar';
-import TokenTimer from '@/Components/TokenTimer';
-
-
-const icons = ['facebook', 'instagram', 'twitter', 'linkedin', 'tiktok', 'telegram', 'whatsapp'];
+import AdminShell, { PageHeader } from '@/Components/AdminShell';
+import { Card } from '@/Components/ui/Card';
+import { api } from '@/lib/http';
+import LinkForm, { LinkValues } from '../LinkForm';
 
 const AddLink = () => {
-    const [icon, setIcon] = useState('');
-    const [url, setUrl] = useState('');
     const router = useRouter();
-    const handleSubmit = async () => {
-        const token = localStorage.getItem('auth_token');
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/links`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,},
-            body: JSON.stringify({ icon, url }),
-        });
 
-        if (res.ok) {
-            router.push('/admin/social-links');
-            setIcon('');
-            setUrl('');
-        } else {
-            const err = await res.json();
-            alert('Ошибка: ' + err.error);
-        }
+    const handleSubmit = async (values: LinkValues) => {
+        await api('/api/links', { method: 'POST', json: values });
+        router.push('/admin/social-links');
     };
 
     return (
-        <div className="container mx-auto">
-            <div className="flex bg-gray-200">
-                <Sidebar/>
-                <div className="flex-1 p-10 ml-62">
-                    <TokenTimer/>
-                    <div className="mt-8 bg-white p-4">
-                        <form onSubmit={(e) => e.preventDefault()} style={{display: 'flex', gap: '1rem'}}>
-                            <TextField
-                                select
-                                label="Platform"
-                                value={icon}
-                                onChange={(e) => setIcon(e.target.value)}
-                                required
-                                className="w-56"
-                            >
-                                {icons.map((p) => (
-                                    <MenuItem key={p} value={p}>
-                                        {p}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-
-                            <TextField
-                                label="Links"
-                                value={url}
-                                onChange={(e) => setUrl(e.target.value)}
-                                required
-                                fullWidth
-                            />
-
-                            <Button variant="contained" onClick={handleSubmit}
-                                    className="w-44 !bg text-white">
-                                Add link
-                            </Button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
+        <AdminShell>
+            <PageHeader title="Add social link" back={{ href: '/admin/social-links', label: 'Social links' }} />
+            <Card className="max-w-2xl">
+                <LinkForm initial={{ icon: '', url: '' }} submitLabel="Add link" onSubmit={handleSubmit} />
+            </Card>
+        </AdminShell>
     );
 };
 

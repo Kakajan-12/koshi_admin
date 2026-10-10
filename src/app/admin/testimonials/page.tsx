@@ -1,128 +1,118 @@
-'use client'
-import React, {useEffect, useState} from "react";
-import {useRouter} from "next/navigation";
-import axios, {AxiosError} from "axios";
-import Sidebar from "@/Components/Sidebar";
-import TokenTimer from "@/Components/TokenTimer";
-import Link from "next/link";
-import {EyeIcon, PlusCircleIcon} from "@heroicons/react/16/solid";
-import Image from "next/image";
+'use client';
 
-interface TestimonialsItem {
+import { PencilSquareIcon, PlusIcon, TrashIcon } from "@heroicons/react/20/solid";
+import AdminShell, { PageHeader } from "@/Components/AdminShell";
+import Button from "@/Components/ui/Button";
+import { Card } from "@/Components/ui/Card";
+import { Alert } from "@/Components/ui/Form";
+import { ConfirmDialog, EmptyState, ErrorState, LoadingState } from "@/Components/ui/Feedback";
+import { RowActions, Table, TBody, TD, TH, THead, Thumb, TR } from "@/Components/ui/Table";
+import { uploadUrl } from "@/lib/api";
+import { useList } from "@/lib/useList";
+import { Stars } from "@/Components/ui/StarRating";
+import { useRouter } from "next/navigation";
+import { htmlToText } from "@/lib/html";
+
+type Testimonial = {
     id: number;
     image: string;
     text: string;
     name: string;
-}
+    rating: number | null;
+};
+
+// Имя и текст приходят из редактора как HTML — в списке показываем обычный текст
+const plainText = htmlToText;
 
 const Testimonials = () => {
-    const [testimonials, setTestimonials] = useState<TestimonialsItem[]>([]);
-
-    const [error, setError] = useState<string | null>(null);
     const router = useRouter();
-
-    useEffect(() => {
-        const fetchTours = async () => {
-            try {
-                const token = localStorage.getItem('auth_token');
-                if (!token) {
-                    router.push('/');
-                    return;
-                }
-
-                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/testimonials`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                setTestimonials(response.data);
-            } catch (err) {
-                const axiosError = err as AxiosError;
-                console.error(axiosError);
-                setError("Ошибка при получении данных");
-
-                if (axios.isAxiosError(axiosError) && axiosError.response?.status === 401) {
-                    router.push("/");
-                }
-            }
-        };
-
-        fetchTours();
-    }, [router]);
-
-    if (error) {
-        return <div>{error}</div>;
-    }
+    const list = useList<Testimonial>("/api/testimonials");
 
     return (
-        <div className="container mx-auto">
-            <div className="flex bg-gray-200">
-                <Sidebar/>
-                <div className="flex-1 p-10 ml-62">
-                    <TokenTimer/>
-                    <div className="mt-8">
-                        <div className="w-full flex justify-between">
-                            <h2 className="text-2xl font-bold mb-4">Testimonials</h2>
-                            <Link href="/admin/testimonials/add-testimonials"
-                                  className="bg text-white h-fit py-2 px-8 rounded-md cursor-pointer flex items-center"><PlusCircleIcon
-                                className="size-6" color="#ffffff"/>
-                                <div className="ml-2">Add</div>
-                            </Link>
-                        </div>
-                        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                            <thead>
-                            <tr className="divide-x-1 divide-gray-200">
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Image</th>
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Testimonials</th>
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Name</th>
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-center text-gray-600">View</th>
-                            </tr>
-                            </thead>
-                            <tbody className="divide-y-1 divide-gray-200">
-                            {testimonials.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="text-center py-4">No data available</td>
-                                </tr>
-                            ) : (
-                                testimonials.map(testimonial => (
-                                    <tr key={testimonial.id} className="divide-x-1 divide-gray-200">
-                                        <td className="py-4 px-4">
-                                            <Image
-                                                src={`${process.env.NEXT_PUBLIC_API_URL}/${testimonial.image}`.replace(/\\/g, '/')}
-                                                alt={`Image ${testimonial.id}`}
-                                                width={100}
-                                                height={100}
-                                            />
+        <AdminShell>
+            <PageHeader
+                title="Testimonials"
+                description="Customer reviews on the home page."
+                actions={
+                    <Button href="/admin/testimonials/add-testimonials" icon={<PlusIcon className="size-4" />}>
+                        Add testimonial
+                    </Button>
+                }
+            />
 
-                                        </td>
-                                        <td className="py-4 px-4">
-                                            <div dangerouslySetInnerHTML={{__html: testimonial.text}}/>
-                                        </td>
-                                        <td className="py-4 px-4">
-                                            <div dangerouslySetInnerHTML={{__html: testimonial.name}}/>
-                                        </td>
-                                        <td className="py-4 px-4">
-                                            <div className="flex justify-center items-center h-full">
-                                                <Link href={`/admin/testimonials/view-testimonials/${testimonial.id}`}
-                                                      className="bg text-white py-2 px-8 rounded-md cursor-pointer flex w-32"><EyeIcon
-                                                    color="#ffffff"/>
-                                                    <div className="ml-2">View</div>
-                                                </Link>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+            {list.deleteError && <div className="mb-4"><Alert>{list.deleteError}</Alert></div>}
 
+            <Card>
+                {list.loading ? (
+                    <LoadingState />
+                ) : list.error ? (
+                    <ErrorState message={list.error} onRetry={list.reload} />
+                ) : list.items.length === 0 ? (
+                    <EmptyState
+                        title="No testimonials yet"
+                        description="Add what customers say about your cakes."
+                        action={<Button href="/admin/testimonials/add-testimonials" size="sm">Add testimonial</Button>}
+                    />
+                ) : (
+                    <Table>
+                        <THead>
+                            <TH>Customer</TH>
+                            <TH className="hidden sm:table-cell">Rating</TH>
+                            <TH className="hidden md:table-cell">Testimonial</TH>
+                            <TH align="right"><span className="sr-only">Actions</span></TH>
+                        </THead>
+                        <TBody>
+                            {list.items.map((item) => (
+                                <TR key={item.id} onClick={() => router.push(`/admin/testimonials/view-testimonials/${item.id}`)}>
+                                    <TD>
+                                        <div className="flex items-center gap-3">
+                                            <Thumb src={uploadUrl(item.image)} alt={item.name} />
+                                            <span className="font-medium text-slate-900">{plainText(item.name)}</span>
+                                        </div>
+                                    </TD>
+                                    <TD className="hidden whitespace-nowrap sm:table-cell"><Stars value={item.rating} /></TD>
+                                    <TD className="hidden max-w-md md:table-cell">
+                                        <p className="line-clamp-2 text-slate-500">{plainText(item.text)}</p>
+                                    </TD>
+                                    <TD align="right">
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <RowActions>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    href={`/admin/testimonials/edit-testimonials/${item.id}`}
+                                                    icon={<PencilSquareIcon className="size-4" />}
+                                                >
+                                                    Edit
+                                                </Button>
+                                                <Button
+                                                    variant="ghostDanger"
+                                                    size="sm"
+                                                    onClick={() => list.askDelete(item)}
+                                                    icon={<TrashIcon className="size-4" />}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </RowActions>
+                                        </div>
+                                    </TD>
+                                </TR>
+                            ))}
+                        </TBody>
+                    </Table>
+                )}
+            </Card>
 
-    )
-}
+            <ConfirmDialog
+                open={!!list.pendingDelete}
+                title="Delete testimonial?"
+                description={`The testimonial from ${plainText(list.pendingDelete?.name ?? "")} will be removed from the website.`}
+                loading={list.deleting}
+                onConfirm={list.confirmDelete}
+                onCancel={list.cancelDelete}
+            />
+        </AdminShell>
+    );
+};
 
 export default Testimonials;

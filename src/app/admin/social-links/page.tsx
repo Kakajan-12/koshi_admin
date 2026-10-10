@@ -1,215 +1,113 @@
 'use client';
 
-import Sidebar from "@/Components/Sidebar";
-import TokenTimer from "@/Components/TokenTimer";
-import Link from "next/link";
-import React, { useEffect, useState } from 'react';
-import axios, { AxiosError } from 'axios';
-import { useRouter } from 'next/navigation';
-import {
-    TrashIcon,
-    PencilIcon,
-    PlusCircleIcon
-} from "@heroicons/react/16/solid";
-import FacebookIcon from '@mui/icons-material/Facebook';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import TelegramIcon from '@mui/icons-material/Telegram';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import TikTokIcon from '@mui/icons-material/MusicNote'; // Заменитель для TikTok
+import { PencilSquareIcon, PlusIcon, TrashIcon } from "@heroicons/react/20/solid";
+import AdminShell, { PageHeader } from "@/Components/AdminShell";
+import Button from "@/Components/ui/Button";
+import { Card } from "@/Components/ui/Card";
+import { Alert } from "@/Components/ui/Form";
+import { ConfirmDialog, EmptyState, ErrorState, LoadingState } from "@/Components/ui/Feedback";
+import { RowActions, Table, TBody, TD, TH, THead, TR } from "@/Components/ui/Table";
+import SocialIcon, { platformLabel } from "@/Components/SocialIcon";
+import { useList } from "@/lib/useList";
 
-interface LinkType {
+type SocialLink = {
     id: number;
     icon: string;
     url: string;
-}
+};
 
 const SocialLinks = () => {
-    const [links, setLinks] = useState<LinkType[]>([]);
-    const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [showModal, setShowModal] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [deleteId, setDeleteId] = useState<number | null>(null);
-    const router = useRouter();
-
-    const getIconComponent = (iconName: string) => {
-        switch (iconName.toLowerCase()) {
-            case 'facebook':
-                return <FacebookIcon />;
-            case 'instagram':
-                return <InstagramIcon />;
-            case 'twitter':
-                return <TwitterIcon />;
-            case 'linkedin':
-                return <LinkedInIcon />;
-            case 'telegram':
-                return <TelegramIcon />;
-            case 'whatsapp':
-                return <WhatsAppIcon />;
-            case 'tiktok':
-                return <TikTokIcon />;
-            default:
-                return <span>❓</span>;
-        }
-    };
-
-    useEffect(() => {
-        const fetchLinks = async () => {
-            try {
-                const token = localStorage.getItem('auth_token');
-                if (!token) {
-                    router.push('/');
-                    return;
-                }
-
-                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/links`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                setLinks(response.data);
-            } catch (err) {
-                const axiosError = err as AxiosError;
-                console.error(axiosError);
-                setError('Ошибка при получении данных');
-                if (axios.isAxiosError(axiosError) && axiosError.response?.status === 401) {
-                    router.push('/');
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchLinks();
-    }, [router]);
-
-
-    const handleDelete = async () => {
-        if (!deleteId) return;
-        setIsDeleting(true);
-        try {
-            const token = localStorage.getItem('auth_token');
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/links/${deleteId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            setLinks(prev => prev.filter(link => link.id !== deleteId));
-            setDeleteId(null);
-            setShowModal(false);
-        } catch (err) {
-            console.error("Ошибка при удалении:", err);
-            setError('Ошибка при удалении ссылки');
-        } finally {
-            setIsDeleting(false);
-        }
-    };
-
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div className="text-red-500">{error}</div>;
+    const list = useList<SocialLink>("/api/links");
 
     return (
-        <div className="container mx-auto">
-            <div className="flex bg-gray-200 min-h-screen">
-                <Sidebar/>
-                <div className="flex-1 p-10 ml-62">
-                    <TokenTimer/>
-                    <div className="mt-8">
-                        <div className="w-full flex justify-between">
-                            <h2 className="text-2xl font-bold mb-4">Social Links</h2>
-                            <Link href="/admin/social-links/add-link"
-                                  className="bg text-white py-2 px-8 rounded-md cursor-pointer flex items-center">
-                                <PlusCircleIcon className="w-6 h-6" color="#ffffff"/>
-                                <div className="ml-2">Add</div>
-                            </Link>
-                        </div>
-                        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                            <thead>
-                            <tr className="divide-x-1 divide-gray-200">
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Icon</th>
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-gray-600">Url</th>
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-center text-gray-600">Edit</th>
-                                <th className="py-2 px-4 border-b-2 border-gray-200 text-center text-gray-600">Delete</th>
-                            </tr>
-                            </thead>
-                            <tbody className="divide-y-1 divide-gray-200">
-                            {links.length === 0 ? (
-                                <tr>
-                                    <td colSpan={4} className="text-center py-4">No data available</td>
-                                </tr>
-                            ) : (
-                                links.map((link) => (
-                                    <tr key={link.id} className="divide-x-1 divide-gray-200">
-                                        <td className="py-4 px-4 border-b border-gray-200">
-                                            {getIconComponent(link.icon)}
-                                        </td>
-                                        <td className="py-4 px-4 border-b border-gray-200 w-full">
-                                            <a href={link.url} target="_blank" rel="noopener noreferrer"
-                                               className="text-blue-600 underline">
-                                                {link.url}
-                                            </a>
-                                        </td>
-                                        <td className="py-4 px-4 border-b border-gray-200">
-                                            <Link href={`/admin/social-links/edit-link/${link.id}`}
-                                                  className="bg text-white py-2 px-8 rounded-md cursor-pointer flex w-32 justify-center items-center">
-                                                <PencilIcon className="w-5 h-5" color="#ffffff"/>
-                                                <div className="ml-2">Edit</div>
-                                            </Link>
-                                        </td>
-                                        <td className="py-4 px-4 border-b border-gray-200">
-                                            <button
-                                                onClick={() => {
-                                                    setDeleteId(link.id);
-                                                    setShowModal(true);
-                                                }}
-                                                className="bg-red-700 text-white py-2 px-8 rounded-md cursor-pointer flex w-32 justify-center items-center"
+        <AdminShell>
+            <PageHeader
+                title="Social links"
+                description="Icons in the website footer."
+                actions={
+                    <Button href="/admin/social-links/add-link" icon={<PlusIcon className="size-4" />}>
+                        Add link
+                    </Button>
+                }
+            />
+
+            {list.deleteError && <div className="mb-4"><Alert>{list.deleteError}</Alert></div>}
+
+            <Card>
+                {list.loading ? (
+                    <LoadingState rows={3} />
+                ) : list.error ? (
+                    <ErrorState message={list.error} onRetry={list.reload} />
+                ) : list.items.length === 0 ? (
+                    <EmptyState
+                        title="No social links yet"
+                        description="Add links to Instagram, Facebook and other networks."
+                        action={<Button href="/admin/social-links/add-link" size="sm">Add link</Button>}
+                    />
+                ) : (
+                    <Table>
+                        <THead>
+                            <TH>Platform</TH>
+                            <TH>Link</TH>
+                            <TH align="right"><span className="sr-only">Actions</span></TH>
+                        </THead>
+                        <TBody>
+                            {list.items.map((item) => (
+                                <TR key={item.id}>
+                                    <TD>
+                                        <div className="flex items-center gap-3">
+                                            <span className="flex size-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                                                <SocialIcon name={item.icon} className="size-4" />
+                                            </span>
+                                            <span className="font-medium text-slate-900">{platformLabel(item.icon)}</span>
+                                        </div>
+                                    </TD>
+                                    <TD>
+                                        <a
+                                            href={item.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block max-w-xs truncate text-slate-600 hover:text-brand-600 hover:underline"
+                                        >
+                                            {item.url}
+                                        </a>
+                                    </TD>
+                                    <TD align="right">
+                                        <RowActions>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                href={`/admin/social-links/edit-link/${item.id}`}
+                                                icon={<PencilSquareIcon className="size-4" />}
                                             >
-                                                <TrashIcon className="w-5 h-5" color="#ffffff"/>
-                                                <div className="ml-2">Delete</div>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Modal */}
-                {showModal && (
-                    <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center z-50">
-                        <div className="bg-white p-6 rounded-lg">
-                            <p className="text-lg font-medium mb-4">Remove link?</p>
-                            <div className="flex justify-end space-x-4">
-                                <button
-                                    onClick={() => {
-                                        setDeleteId(null);
-                                        setShowModal(false);
-                                    }}
-                                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleDelete}
-                                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                                    disabled={isDeleting}
-                                >
-                                    {isDeleting ? 'Deleting...' : 'Delete'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                variant="ghostDanger"
+                                                size="sm"
+                                                onClick={() => list.askDelete(item)}
+                                                icon={<TrashIcon className="size-4" />}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </RowActions>
+                                    </TD>
+                                </TR>
+                            ))}
+                        </TBody>
+                    </Table>
                 )}
-            </div>
-        </div>
+            </Card>
 
-
+            <ConfirmDialog
+                open={!!list.pendingDelete}
+                title="Delete social link?"
+                description={`The ${platformLabel(list.pendingDelete?.icon ?? "")} icon will disappear from the website footer.`}
+                loading={list.deleting}
+                onConfirm={list.confirmDelete}
+                onCancel={list.cancelDelete}
+            />
+        </AdminShell>
     );
 };
 
