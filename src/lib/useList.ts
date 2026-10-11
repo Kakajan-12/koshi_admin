@@ -50,6 +50,8 @@ export function useList<T extends WithId>(path: string) {
 
     return {
         items,
+        // Для изменений на месте (например, перестановки) без перезагрузки списка
+        setItems,
         loading,
         error,
         reload,
