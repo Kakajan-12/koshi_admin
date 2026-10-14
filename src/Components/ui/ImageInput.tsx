@@ -56,7 +56,7 @@ export default function ImageInput({
                     onChange={(e) => onChange(e.target.files?.[0] ?? null)}
                 />
                 <p className={`mt-1.5 text-xs text-slate-500 ${file ? "truncate" : ""}`}>
-                    {file ? file.name : "JPEG, PNG, WebP or GIF, up to 10 MB"}
+                    {file ? file.name : "JPEG, PNG or WebP — photos are compressed automatically"}
                 </p>
             </div>
         </div>

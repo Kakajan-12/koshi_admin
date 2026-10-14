@@ -1,4 +1,5 @@
 import { API_URL } from "./api";
+import { compressImage } from "./compressImage";
 
 export class ApiError extends Error {
     constructor(message: string, public status: number) {
@@ -13,6 +14,20 @@ type Options = {
     form?: FormData;
 };
 
+// Фотографии в форме сжимаем до загрузки (lib/compressImage.ts): сервер принимает запросы до 1 МБ
+async function compressForm(form: FormData): Promise<FormData> {
+    const out = new FormData();
+    for (const [key, value] of form.entries()) {
+        if (value instanceof File) {
+            const file = await compressImage(value);
+            out.append(key, file, file.name);
+        } else {
+            out.append(key, value);
+        }
+    }
+    return out;
+}
+
 // Запрос к API админки: cookie с токеном, разбор JSON, понятные ошибки.
 // 401 — сессия истекла, отправляем на страницу входа.
 export async function api<T = unknown>(path: string, { method = "GET", json, form }: Options = {}): Promise<T> {
@@ -20,8 +35,11 @@ export async function api<T = unknown>(path: string, { method = "GET", json, for
         method,
         credentials: "include",
         headers: json !== undefined ? { "Content-Type": "application/json" } : undefined,
-        body: json !== undefined ? JSON.stringify(json) : form,
+        body: json !== undefined ? JSON.stringify(json) : form && (await compressForm(form)),
     });
+
+    // Ответ nginx, а не API: запрос больше client_max_body_size
+    if (res.status === 413) throw new ApiError("The image is too large. Please choose a smaller photo.", 413);
 
     if (res.status === 401) {
         if (typeof window !== "undefined") window.location.assign("/");

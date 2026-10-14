@@ -66,7 +66,7 @@ export default function MultiImageInput({
                     e.target.value = "";
                 }}
             />
-            <p className="mt-2 text-xs text-slate-500">You can select several photos at once. JPEG, PNG, WebP or GIF, up to 10 MB each.</p>
+            <p className="mt-2 text-xs text-slate-500">You can select several photos at once. JPEG, PNG or WebP — photos are compressed automatically.</p>
         </div>
     );
 }
