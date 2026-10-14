@@ -5,14 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import AdminShell, { PageHeader } from '@/Components/AdminShell';
 import Button from '@/Components/ui/Button';
 import { Card, CardBody } from '@/Components/ui/Card';
-import { Alert, Field, FormActions, Input } from '@/Components/ui/Form';
+import { Alert, Field, FormActions, Input, Toggle } from '@/Components/ui/Form';
 import { ErrorState, LoadingState } from '@/Components/ui/Feedback';
 import ImageInput from '@/Components/ui/ImageInput';
 import { uploadUrl } from '@/lib/api';
 import { api, errorMessage } from '@/lib/http';
 import { useRecord } from '@/lib/useRecord';
 
-type Category = { id: number; name: string; image: string };
+type Category = { id: number; name: string; image: string; allows_message?: number | boolean };
 
 const EditCategory = () => {
     const { id } = useParams();
@@ -27,6 +27,7 @@ const EditCategory = () => {
         if (!data) return;
         const formData = new FormData();
         formData.append('name', data.name);
+        formData.append('allows_message', data.allows_message === undefined || Number(data.allows_message) ? '1' : '0');
         // Без нового файла сервер оставляет прежнюю картинку
         if (imageFile) formData.append('image', imageFile);
 
@@ -64,6 +65,13 @@ const EditCategory = () => {
                             <Field label="Image">
                                 <ImageInput file={imageFile} onChange={setImageFile} currentUrl={uploadUrl(data.image)} />
                             </Field>
+                            <Toggle
+                                // Старый сервер поле не присылает — считаем, что надпись можно
+                                checked={data.allows_message === undefined || !!Number(data.allows_message)}
+                                onChange={(v) => setData({ ...data, allows_message: v ? 1 : 0 })}
+                                label="Allow a custom message"
+                                description="Customers can add a message (+£10) to items in this category, e.g. on cakes. Turn off for biscuits."
+                            />
                         </CardBody>
                         <FormActions>
                             <Button variant="secondary" href="/admin/product-category">Cancel</Button>

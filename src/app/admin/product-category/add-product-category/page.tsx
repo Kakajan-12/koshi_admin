@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import AdminShell, { PageHeader } from '@/Components/AdminShell';
 import Button from '@/Components/ui/Button';
 import { Card, CardBody } from '@/Components/ui/Card';
-import { Alert, Field, FormActions, Input } from '@/Components/ui/Form';
+import { Alert, Field, FormActions, Input, Toggle } from '@/Components/ui/Form';
 import ImageInput from '@/Components/ui/ImageInput';
 import { api, errorMessage } from '@/lib/http';
 
@@ -13,6 +13,7 @@ const AddCategory = () => {
     const router = useRouter();
     const [image, setImage] = useState<File | null>(null);
     const [name, setName] = useState('');
+    const [allowsMessage, setAllowsMessage] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -25,6 +26,7 @@ const AddCategory = () => {
         const formData = new FormData();
         formData.append('image', image);
         formData.append('name', name);
+        formData.append('allows_message', allowsMessage ? '1' : '0');
 
         setSaving(true);
         setError(null);
@@ -50,6 +52,12 @@ const AddCategory = () => {
                         <Field label="Image" required>
                             <ImageInput file={image} onChange={setImage} required />
                         </Field>
+                        <Toggle
+                            checked={allowsMessage}
+                            onChange={setAllowsMessage}
+                            label="Allow a custom message"
+                            description="Customers can add a message (+£10) to items in this category, e.g. on cakes. Turn off for biscuits."
+                        />
                     </CardBody>
                     <FormActions>
                         <Button variant="secondary" href="/admin/product-category">Cancel</Button>

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import Button from '@/Components/ui/Button';
 import { Card, CardBody, CardHeader } from '@/Components/ui/Card';
-import { Alert, Field, Input, Select } from '@/Components/ui/Form';
+import { Alert, Field, Input, Select, Toggle } from '@/Components/ui/Form';
 import ImageInput from '@/Components/ui/ImageInput';
 import TipTapEditor from '@/Components/TipTapEditor';
 import { api } from '@/lib/http';
@@ -45,32 +45,6 @@ export const emptyProduct: ProductValues = {
 type Option = { id: number; name?: string; type_name?: string };
 
 const isEmptyHtml = (html: string) => !html.replace(/<[^>]*>/g, '').trim();
-
-function Toggle({
-    checked,
-    onChange,
-    label,
-    description,
-}: {
-    checked: boolean;
-    onChange: (v: boolean) => void;
-    label: string;
-    description: string;
-}) {
-    return (
-        <label className="flex cursor-pointer items-start justify-between gap-4">
-            <span>
-                <span className="block text-sm font-medium text-slate-900">{label}</span>
-                <span className="block text-xs text-slate-500">{description}</span>
-            </span>
-            <span className="relative mt-0.5 inline-flex shrink-0">
-                <input type="checkbox" className="peer sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-                <span className="h-6 w-11 rounded-full bg-slate-200 transition-colors peer-checked:bg-brand-500 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500 peer-focus-visible:ring-offset-2" />
-                <span className="absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
-            </span>
-        </label>
-    );
-}
 
 // Общая форма добавления и редактирования товара
 export default function ProductForm({
