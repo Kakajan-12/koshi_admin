@@ -25,6 +25,7 @@ type Product = {
     category_name?: string;
     type_name?: string;
     product_availability: number;
+    stock_quantity: number | null;
     delivery: string;
     notice: string | null;
     allergens: { id: number; name: string }[];
@@ -129,6 +130,9 @@ const ViewProduct = () => {
                                             {data.product_availability ? <Badge tone="green">In stock</Badge> : <Badge tone="amber">Pre-order</Badge>}
                                             {data.loved ? <Badge tone="brand">Favourite</Badge> : null}
                                         </div>
+                                    </DetailRow>
+                                    <DetailRow label="Stock">
+                                        {data.stock_quantity === null ? <span className="text-slate-400">Not counted</span> : data.stock_quantity === 0 ? <Badge tone="red">Sold out</Badge> : `${data.stock_quantity} left`}
                                     </DetailRow>
                                     <DetailRow label="Category">{data.category_name ?? '—'}</DetailRow>
                                     <DetailRow label="Type">{data.type_name ?? '—'}</DetailRow>

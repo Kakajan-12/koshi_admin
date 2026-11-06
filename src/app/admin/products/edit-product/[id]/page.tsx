@@ -22,6 +22,7 @@ type ApiProduct = {
     product_category: number;
     product_types: number;
     product_availability: number;
+    stock_quantity: number | null;
     delivery: string;
     notice: string | null;
     allergens: { id: number; name: string }[];
@@ -36,6 +37,7 @@ const toFormValues = (p: ApiProduct): ProductValues => ({
     product_category: String(p.product_category || ''),
     product_types: String(p.product_types || ''),
     product_availability: !!p.product_availability,
+    stock_quantity: p.stock_quantity === null || p.stock_quantity === undefined ? '' : String(p.stock_quantity),
     loved: !!p.loved,
     delivery: p.delivery || '',
     notice: p.notice || '',

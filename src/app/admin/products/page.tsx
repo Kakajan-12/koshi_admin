@@ -21,6 +21,7 @@ type Product = {
     product_name: string;
     category_name: string | null;
     product_availability: number;
+    stock_quantity: number | null;
     loved: number;
     variants_count: number;
     min_price: number | null;
@@ -242,6 +243,7 @@ function ProductsList() {
                                         <TD className="hidden sm:table-cell">
                                             <div className="flex flex-wrap gap-1.5">
                                                 {p.product_availability ? <Badge tone="green">In stock</Badge> : <Badge tone="amber">Pre-order</Badge>}
+                                                {p.stock_quantity === null ? null : p.stock_quantity === 0 ? <Badge tone="red">Sold out</Badge> : <Badge>{p.stock_quantity} left</Badge>}
                                                 {p.loved ? <Badge tone="brand">Favourite</Badge> : null}
                                             </div>
                                         </TD>

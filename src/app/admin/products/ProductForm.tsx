@@ -19,6 +19,8 @@ export type ProductValues = {
     product_category: string;
     product_types: string;
     product_availability: boolean;
+    // Строка из поля ввода; пусто — остаток не считаем
+    stock_quantity: string;
     loved: boolean;
     delivery: string;
     notice: string;
@@ -35,6 +37,7 @@ export const emptyProduct: ProductValues = {
     product_types: '',
     // Как и раньше, новый товар по умолчанию «под заказ»
     product_availability: false,
+    stock_quantity: '',
     loved: false,
     delivery: '',
     notice: '',
@@ -220,6 +223,22 @@ export default function ProductForm({
                                 label="In stock"
                                 description="Off — shown as pre-order on the website."
                             />
+                            <Field
+                                label="Stock quantity"
+                                htmlFor="stock_quantity"
+                                hint="Leave empty if you don't count this product. Goes down after each paid order; at 0 it shows as Sold out. Shared by all sizes."
+                            >
+                                <Input
+                                    id="stock_quantity"
+                                    type="number"
+                                    inputMode="numeric"
+                                    min={0}
+                                    max={999999}
+                                    step={1}
+                                    value={values.stock_quantity}
+                                    onChange={(e) => set('stock_quantity', e.target.value)}
+                                />
+                            </Field>
                             <Toggle
                                 checked={values.loved}
                                 onChange={(v) => set('loved', v)}
@@ -313,6 +332,7 @@ export function productFormData(values: ProductValues, image: File | null, { sen
     formData.append('product_category', values.product_category);
     formData.append('product_types', values.product_types);
     formData.append('product_availability', values.product_availability ? '1' : '0');
+    formData.append('stock_quantity', values.stock_quantity.trim());
     formData.append('allergens', JSON.stringify(values.allergens));
     formData.append('delivery', values.delivery);
     // При создании пустое примечание не отправляем — в базе останется NULL, как и раньше
