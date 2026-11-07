@@ -17,6 +17,8 @@ export interface OrderData {
     selectedAddress?: string;
     deliveryFee?: number;
     customMessageFee?: number;
+    // Доставка в Congestion Charge zone (отметил покупатель)
+    congestionCharge?: number;
     // Когда заказ должен быть готов: «2026-10-12» и «14:00» (выбирает покупатель в корзине)
     neededDate?: string;
     neededTime?: string;

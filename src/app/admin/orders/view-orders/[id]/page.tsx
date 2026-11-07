@@ -114,6 +114,12 @@ const OrderDetail = () => {
                                         <dd>{formatMoney(details.deliveryFee)}</dd>
                                     </div>
                                 )}
+                                {Number(details.congestionCharge) > 0 && (
+                                    <div className="flex justify-between text-slate-600">
+                                        <dt>Congestion Charge</dt>
+                                        <dd>{formatMoney(details.congestionCharge)}</dd>
+                                    </div>
+                                )}
                                 {Number(details.customMessageFee) > 0 && (
                                     <div className="flex justify-between text-slate-600">
                                         <dt>Cake messages</dt>
